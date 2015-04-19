@@ -12,5 +12,5 @@ There are a couple useful links:
 
 - [Novel PM generators for large wind turbines](https://www.sintef.no/globalassets/project/nowitech/wind-presentations-2011/a2/matveev-alexey_smartmotor.pdf)
 - [Double-Sided Rotor Technology for Iron-Cored Permanent Magnet Wind Generators:An Evaluation](http://research.ee.sun.ac.za/emr/files/u1/2013-ICIT-VanWijk.pdf)
--[DESIGN OF AXIAL-FLUX PERMANENT-MAGNET LOW-SPEED MACHINES](http://web.mit.edu/kirtley/binlustuff/literature/electric%20machine/designOfAxialFluxPMM.pdf)
+- [DESIGN OF AXIAL-FLUX PERMANENT-MAGNET LOW-SPEED MACHINES](http://web.mit.edu/kirtley/binlustuff/literature/electric%20machine/designOfAxialFluxPMM.pdf)
 
