@@ -3,8 +3,12 @@ Design Projects for EE564
 
 ## Guidelines for the Design Projects
 
-- Deadline: Final examination date
 
+- Have look at the topics below, and fill in your preference to [this spreadsheet](https://docs.google.com/spreadsheets/d/173FqykIj7HfWxBJXid-JUIKdqOeXsMr1O3MJ19IN08g/edit?usp=sharing)
+- Create an account in [GitHub](https://github.com/), and let me know.
+- Then cl
+
+- Deadline: Final examination date
 
 ### 1- Tesla Model S Motor
 Design the induction motor that is used in [Tesla Model S](http://www.teslamotors.com/models), which has a few different variations. To keep things simple, use the [RWD 85 Model](http://en.wikipedia.org/wiki/Tesla_Model_S#Powertrain), with rear wheel drive, which has the following specs:
@@ -17,7 +21,7 @@ You can find some specs of the motor from [here](http://teslatap.com/undocumente
 
 Here are a few useful links:
 
--[How does Tesla make their motors in the model S so small?](http://www.reddit.com/r/AskEngineers/comments/2mv2h5/how_does_tesla_make_their_motors_in_the_model_s/)
+- [How does Tesla make their motors in the model S so small?](http://www.reddit.com/r/AskEngineers/comments/2mv2h5/how_does_tesla_make_their_motors_in_the_model_s/)
 - [Tesla Motor Technology](http://my.teslamotors.com/roadster/technology/motor)
 - [Electric traction machine choice](http://sites.ieee.org/miami/files/2014/11/Hendershot-FIU-Lecture.pdf)
 
@@ -66,7 +70,7 @@ The machine is forced-cooled, but you are free to design a natural-cooled machin
 
 There are a couple useful links:
 
--[Novel PM generators for large wind turbines](https://www.sintef.no/globalassets/project/nowitech/wind-presentations-2011/a2/matveev-alexey_smartmotor.pdf)
+- [Novel PM generators for large wind turbines](https://www.sintef.no/globalassets/project/nowitech/wind-presentations-2011/a2/matveev-alexey_smartmotor.pdf)
 - [Double-Sided Rotor Technology for Iron-Cored Permanent Magnet Wind Generators:An Evaluation](http://research.ee.sun.ac.za/emr/files/u1/2013-ICIT-VanWijk.pdf)
 -[DESIGN OF AXIAL-FLUX PERMANENT-MAGNET LOW-SPEED MACHINES](http://web.mit.edu/kirtley/binlustuff/literature/electric%20machine/designOfAxialFluxPMM.pdf)
 
