@@ -23,7 +23,7 @@
 -  However, if you want to include your calculations, I strongly suggest [IPython Notebook](http://ipython.org/notebook.html), which can be viewed [online](http://nbviewer.ipython.org/). You can also use Mathematica, [RStudio](http://www.rstudio.com/products/rstudio/) or Matlab Report Generator, but not Microsoft Word. If you are convinced to use IPython, here are some useful links:
 
   - To use it in your computer and for a quick start on Python install [Anaconda](http://continuum.io/downloads)
-  - Or use [Wakari](https://wakari.io), or [Sage](http://sagemath.blogspot.com.tr/2013/09/ipython-notebooks-in-cloud-with.html) to use it online, or let me know, so I can give you  access to my personal server.
+  - Or use [Wakari](https://wakari.io), or [Sage](http://sagemath.blogspot.com.tr/2013/09/ipython-notebooks-in-cloud-with.html) to use it online, or let me know, so I can give you  access to my personal server. If you use Chrome, you can also install [this App](https://chrome.google.com/webstore/detail/colaboratory-notebook/pianggobfjcgeihlmfhfgkfalopndooo).
   - [IPhyton Notebook basics](http://nbviewer.ipython.org/github/Tooblippe/zapycon2013_ipython_science/blob/master/src/pycon13_ipython.ipynb),  [Wakari IPython Basics](https://wakari.io/gallery)
   - [A gallery of interesting IPython Notebooks](https://github.com/ipython/ipython/wiki/A-gallery-of-interesting-IPython-Notebooks)
 
