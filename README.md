@@ -44,7 +44,7 @@ You must use **at least one software tool** during your design process. Have a l
 
 ### Grading
 
-- **Number of Commits:30%**: The number of edits of your project  files as seen from the [contributors list](https://github.com/odtu/ee564/graphs/contributors). For example, if you make your project in the final days, you'll get no credit. The project topics are not easy, you are encouraged to start early and work regularly.
+- **Number of Commits:30%**: The number of edits of your project  files as seen from the [contributors list](https://github.com/odtu/ee564/graphs/contributors). For example, if you start making your project in the last few days, you'll get no credit. If you start early and continue editing your files, you'll get full credit. The project topics are not easy, so this is a way to encourage to start early and work regularly.
 
 - **Level of Information:50%**: The detail level of your designs (see requirements above), and the accuracy of your calculations.
 
