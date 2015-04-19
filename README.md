@@ -2,20 +2,21 @@
 
 ## Guidelines
 
-- Have look at the topics below. You can find detailed information and specs in the folders.
+- Have look at the topics below. You can find detailed information and specs in the subfolders.
 
 1. Tesla Model S Motor
 2. BMW i3 Traction Motor
 3. Tulomsas Train Traction Motor
-4. Direct-Drive PM Wind Turbine Generator Design
+4. Direct Drive PM Wind Turbine Generator Design
+
 
 - Fill in your preference to [this spreadsheet](https://docs.google.com/spreadsheets/d/173FqykIj7HfWxBJXid-JUIKdqOeXsMr1O3MJ19IN08g/edit?usp=sharing)
 
-- Create an account in [GitHub](https://github.com/), and let me know your username, so I can give you write access on the repo.
+- Create an account in [GitHub](https://github.com/), and let me know your username, so I can give you write access to this repo.
 
 - Learn how to use Git and GitHub, you can also download a software to make things easier ([Source Tree](http://www.sourcetreeapp.com/) is recommended). Have a look at [this link](http://ozan.keysan.me/okst/), for further tips.
 
-- You are supposed to have all your text, codes and figures in the GitHub folder from the first day (see Grading). First create a sub-folder (your name) under the relevant topic folder. For example, BMW->Ahmet. Continue working on this folder. You are encouraged to have a look at other people's work.
+- You are supposed to have all your text, codes and figures in the GitHub folder from the very first day (see Grading). First, create a sub-folder (named as your name) under the relevant topic folder. For example, `BMW->Ahmet`. Put all your files under this folder. You are encouraged to have a look at other people's work.
 
 - Your reports has to be [reproducible](http://www.nature.com/news/interactive-notebooks-sharing-the-code-1.16261) (i.e. it has to include codes, equations and results). For text you can use [markdown](https://guides.github.com/features/mastering-markdown/), just rename a text file as `.md` (this file itself is a markdown file).
 
