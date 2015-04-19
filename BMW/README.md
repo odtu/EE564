@@ -10,3 +10,4 @@
 - [BMW i3 - is this the world's most desirable affordable electric car?](http://www.electric-vehiclenews.com/2014/06/bmw-i3-is-this-worlds-most-desirable.html)
 - [Electric traction machine choice](http://sites.ieee.org/miami/files/2014/11/Hendershot-FIU-Lecture.pdf)
 - [ABB Synchronous Reluctance Machine](http://www09.abb.com/global/scot/scot201.nsf/veritydisplay/9864acc1853bb0b4c1257de4002e153c/$file/EN_SynRM_Brochure_3AUA00000120962_RevE.pdf)
+- [SYRE](http://sourceforge.net/projects/syr-e/)

@@ -1,7 +1,6 @@
-# EE564
-Design Projects for EE564
+# EE564 Design Projects
 
-## Guidelines for the Design Projects
+## Guidelines
 
 - Have look at the topics below. You can find detailed information and specs in the folders.
 
@@ -27,9 +26,33 @@ Design Projects for EE564
   - [IPhyton Notebook basics](http://nbviewer.ipython.org/github/Tooblippe/zapycon2013_ipython_science/blob/master/src/pycon13_ipython.ipynb),  [Wakari IPython Basics](https://wakari.io/gallery)
   - [A gallery of interesting IPython Notebooks](https://github.com/ipython/ipython/wiki/A-gallery-of-interesting-IPython-Notebooks)
 
+### What to Include
+
+You should make a full design including (but not limited to) details such as :
+
+- Main Dimensions (Outer diameter, air-gap diameter, axial-length, number of slots...). Some basic drawings would be perfect.
+- Magnetic Circuit Details (flux density calculations at various points: air-gap, teeth, back-core etc, magnetic loading)
+- Electric Circuit (Winding selection, electric loading, fill factor, phase resistance, winding factors (if applicable))
+- Rough thermal calculations (cooling method, operating temperature, ways to improve cooling)
+- Efficiency, current, torque calculations at various load conditions (full-load, half-load, no-load etc)
+- Mass Calculations (structural mass, copper mass, steel mass, magnet mass etc)
+
+You must use **at least one software tool** during your design process. Have a look at the [course web-page](http://ozan.keysan.me/ee564/) for some suggestions. Instead of using a software, you can link your analytical design with an optimization algorithm to choose best design parameters.
+
+**Bonus:** Compare the effect of a design parameter on the overall design (i.e. different number of slots, different winding scheme, different aspect ratio etc).
+
+### Grading
+
+- **Number of Commits:30%**: The number of edits of your project  files as seen from the [contributors list](https://github.com/odtu/ee564/graphs/contributors). For example, if you make your project in the final days, you'll get no credit. The project topics are not easy, you are encouraged to start early and work regularly.
+
+- **Level of Information:50%**: The detail level of your designs (see requirements above), and the accuracy of your calculations.
+
+- **Report Quality:20%**: Text explaining your design decisions, quality of your figures, citing relevant studies and your conclusion section. 
 
 
-- Deadline: Final examination date
+### Deadline
+
+**Final examination date: ~Early June**
 
 
 
