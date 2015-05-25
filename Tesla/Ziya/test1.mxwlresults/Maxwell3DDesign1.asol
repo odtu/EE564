@@ -1,20 +1,20 @@
 $begin '$base_index$'
   $begin 'properties'
     all_levels=000000000000
-    time(year=000000002015, month=000000000005, day=000000000012, hour=000000000000, min=000000000010, sec=000000000052)
+    time(year=000000002015, month=000000000005, day=000000000016, hour=000000000012, min=000000000026, sec=000000000033)
     version=000000000000
   $end 'properties'
   $begin '$base_index$'
-    $index$(pos=000000000691, lin=000000000017, lvl=000000000000)
+    $index$(pos=000000000693, lin=000000000017, lvl=000000000000)
   $end '$base_index$'
 $end '$base_index$'
 $begin 'SolutionBlock1'
 	ProductName=''
 	CircuitName='Maxwell3DDesign1'
-	VersionID=2
+	VersionID=28
 	PostProcess=false
 	LossLess=true
-	NextUniqueID=5
+	NextUniqueID=30
 	MoveBackwards=false
 	$begin 'LinkedDataList'
 	$end 'LinkedDataList'
@@ -26,9 +26,9 @@ $begin 'BlockMapName'
 $end 'BlockMapName'
 $begin '$index$'
 	$begin '$index$'
-		BlockMapName(pos=620, lin=14, lvl=0)
+		BlockMapName(pos=622, lin=14, lvl=0)
 		SolutionBlock1(pos=370, lin=1, lvl=0)
 		$base_index$(pos=0, lin=1, lvl=0)
-		$index$(pos=691, lin=17, lvl=0)
+		$index$(pos=693, lin=17, lvl=0)
 	$end '$index$'
 $end '$index$'
