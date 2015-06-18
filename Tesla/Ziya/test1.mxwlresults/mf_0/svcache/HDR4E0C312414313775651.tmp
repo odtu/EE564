@@ -1,7 +1,0 @@
-SimValueCacheVersionID=1
-$begin 'SimValueInfos'
-	NextUniqueID=0
-	MoveBackwards=false
-$end 'SimValueInfos'
-$begin 'SimValueCache'
-$end 'SimValueCache'
