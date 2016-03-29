@@ -1,0 +1,42 @@
+Project requirements:
+•	6.5 MVA, Single Phase transformer
+•	Operating Frequency: 500 Hz
+•	Input Voltage: 3 kV
+•	Output Voltage: 300kV
+•	Operating Temperature 110 °C
+
+
+Step 1 Selecting  Core for 500hz application
+From JFE steel company website
+ 
+Lets assume operating Tesla vs loss stays linear until the saturation point .
+There is no 500hz data readily available, so we need to curve fit the available data and determine and approximate loss value 
+Matlab code
+x=[50,400,1000]   %JNHF Core 0.1 mm at 1 Tesla
+y=[1.1 , 10.1 , 30]
+a=polyfit (x,y,2)
+y=polyval(a,500)
+ 
+x=[50,400,1000]   %JNHF Core 0.2 mm at 1 Tesla
+y=[1.2 , 14.5 , 51.6]
+a=polyfit (x,y,2)
+y=polyval(a,500)
+ 
+x=[50,400,1000]   %JNEX Core 0.1mm at 1 Tesla
+y=[0.5 , 5.7 , 18.7]
+a=polyfit (x,y,2)
+y=polyval(a,500)
+
+
+At 1 Tesla operating point
+JNHF core 0.1 mm loss = 13.02 W/kg
+JNHF core 0.2 mm loss =19.43 W/kg
+JNEX core 0.1 mm loss =  7.5   W/kg
+stacking factor at 0,9 for 0.1 mm
+stacking factor 0.92 for 0.2 mm
+Step 1 Selecting  Number of turns and operating tesla
+Our ratio is 1/100 ;
+Lets select N1:10 
+	     N2:1000
+Primary current is 6.5m/3k =2167 A
+We are operating at 500hz , to have  almost 100 percent skin depth our maximum cable diameter can be 5.8 mm which  is about awg#3
