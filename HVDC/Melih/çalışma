@@ -39,4 +39,15 @@ Our ratio is 1/100 ;
 Lets select N1:10 
 	     N2:1000
 Primary current is 6.5m/3k =2167 A
-We are operating at 500hz , to have  almost 100 percent skin depth our maximum cable diameter can be 5.8 mm which  is about awg#3
+
+We are operating at 500hz , to have  almost 100 percent skin depth our maximum cable diameter can be 5.8 mm 
+according to table  which  is about awg#3 but we are operating at 110 C 
+so we need to recalculate the skin depth correcting the resistivity, 
+which will yield  around 6.6 mm , still it is safe to remain at awg #3
+
+Skin depth calculation values:
+P=1,3*1,68*10^-8(approx resistivity at 110 C )
+W=2*3,14*500    (frequency)
+M=1,257*10^-6    (permeability)
+Result:3.326*10^-3 (skin depth)
+
