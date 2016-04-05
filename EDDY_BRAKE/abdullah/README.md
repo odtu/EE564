@@ -21,3 +21,4 @@ You don't have to, but I strongly advise you to use a FEA software (some options
 Simdilik Kullanilan Programlar
 GitHub
 Atom
+yeni programlar gelecek
