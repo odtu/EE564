@@ -18,3 +18,6 @@ The eddy current brake has the following specs:
 
 You don't have to, but I strongly advise you to use a FEA software (some options are listed above) for this project.
 
+Simdilik Kullanilan Programlar
+GitHub
+Atom
