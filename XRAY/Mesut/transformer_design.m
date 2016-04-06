@@ -9,9 +9,9 @@
 
 %%
 % X-ray transformer
-%% 
+%%
 % Single-phase, high frequency, high voltage
-%% 
+%%
 % Primary Winding Voltage ± 417 V (peak to peak 834 V for pulsing)
 %%
 % Secondary Winding Voltage ± 12.5 kV (peak to peak 25 kV for pulsing)
@@ -173,7 +173,7 @@ copper_mass = copper_mass_pri + copper_mass_sec; % grams
 % AL = 6773; % nH/turn
 % Lpri = 1e-3*AL*Npri; % uH
 % Lsec = 1e-3*AL*Nsec; % uH
-% 
+%
 
 %%
 % Magnetic field intensity calculation
@@ -219,7 +219,6 @@ for k = 1:total
 end
 
 total_core_loss = sum(core_harmonic_loss(:)); % Watts
-
 
 
 %% ONCE UPON A TIME IN AN ALTERNATE UNÝVERSE NOT THAT FAR AWAY
@@ -399,9 +398,8 @@ legend('Core Loss','Copper Loss','Total Loss');
 
 
 
-%%
 %% ANOTHER GALAXY
-% The following is the analysis with 17 different types of U,I ferrite
+% The following is the analysis with 14 different types of U,I ferrite
 
 clearvars -EXCEPT efficiency1
 
@@ -569,23 +567,23 @@ legend('Core Loss','Copper Loss','Total Loss');
 
 
 %%
-figure;
-
-core = 1:17;
-
-plot(core,100*efficiency1,'r-o','Linewidth',1.5);
-hold on;
-plot(core,100*efficiency2,'b-o','Linewidth',1.5);
-hold off;
-grid on;
-set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
-ylim([90 100]);
+% figure;
+%
+% core = 1:17;
+%
+% plot(core,100*efficiency1,'r-o','Linewidth',1.5);
+% hold on;
+% plot(core,100*efficiency2,'b-o','Linewidth',1.5);
+% hold off;
+% grid on;
+% set(gca,'FontSize',12);
+% xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+% ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
+% ylim([90 100]);
 
 %%
 
-figure % new figure
+figure
 [hAx,hLine1,hLine2] = plotyy(core,total_loss,core,efficiency);
 
 title('Loss and Efficiency Analysis')
@@ -597,3 +595,205 @@ grid on;
 hLine1.LineStyle = '-';
 hLine2.LineStyle = '--';
 set(gca,'ytick',[0:400:4000]);
+
+
+
+%% SELECT CORE
+% E-I Ferrite core from magnetics
+% 49928E-C
+% material: P-type
+
+clear all;
+
+%%
+% Inputs
+Vin_peak = 417;
+Vpri_peak = Vin_peak*4/pi;
+Vpri_rms = Vpri_peak/sqrt(2);
+Vout_peak = 12500;
+Vsec_peak = Vout_peak*4/pi;
+Vsec_rms = Vsec_peak/sqrt(2);
+Pout = 30000;
+Ipri_rms = Pout/Vpri_rms;
+Isec_rms = Pout/Vsec_rms;
+
+%%
+% core data
+AL = 6773; % nH/turn
+core_length = 274; % mm
+core_area = 738; % mm^2
+core_volume = 202e3; % mm^3
+area_product = 90.6; % cm^4
+window_area = area_product*1e4/core_area; % mm^2
+
+%%
+% turn numbers
+flux_density = 0.3; % Tesla
+flux = flux_density*core_area/1e6; % Weber
+frequency = 100e3;
+Npri = round(Vpri_rms/(4.44*frequency*flux));
+Nsec = round(Vsec_rms/(4.44*frequency*flux));
+
+%%
+% fill factor
+conductor_diameter = 0.40386; % mm
+conductor_area = (conductor_diameter/2)^2*pi; % mm^2
+ohms_per_km = 133.8568; % ohm/km
+current_rating = 0.361; % Amps
+strand_primary = ceil(Ipri_rms/current_rating);
+strand_secondary = ceil(Isec_rms/current_rating);
+area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
+area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
+fill_factor = (area_sec_winding + area_sec_winding)/window_area;
+
+%%
+% winding geometry
+% here, perfect geometry is assumed with no insulation
+primary_one_turn = conductor_diameter*sqrt(strand_primary); % mm
+primary_layer = 1;
+primary_length1 = primary_one_turn*Npri/primary_layer; % mm
+primary_length2 = primary_one_turn*primary_layer; % mm
+secondary_one_turn = conductor_diameter*sqrt(strand_secondary); % mm
+secondary_layer = 3;
+secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
+secondary_length2 = secondary_one_turn*secondary_layer; % mm
+% core window dimensions:
+core_length1 = 94; % mm
+core_length2 = 22; % mm
+total_length1 = secondary_length1+primary_length1;
+if total_length1 < 0.8*core_length1 && primary_length2 < 0.8*core_length2 && secondary_length2 < 0.8*core_length2
+    fprintf('Design is OK\n');
+else
+    fprintf('Design is FAIL\n');
+end
+
+%%
+% copper loss
+mean_length_turn = 4*sqrt(core_area)*1.2/10; % cm
+length_pri = Npri*mean_length_turn; % cm
+ohms_km_pri = ohms_per_km/strand_primary;
+resistance_pri = ohms_km_pri*length_pri/1000; % ohms
+length_sec = Nsec*mean_length_turn; % cm
+ohms_km_sec = ohms_per_km/strand_secondary;
+resistance_sec = ohms_km_sec*length_sec/1000; % ohms
+copper_loss_pri = Ipri_rms^2*resistance_pri;
+copper_loss_sec = Isec_rms^2*resistance_sec;
+copper_loss = copper_loss_pri+copper_loss_sec;
+
+%%
+% core loss
+% Using curve fitting
+% P material @80 Cdegrees
+a = 0.0434;
+c = 1.63;
+d = 2.62;
+f = 100; % kHz
+harmonic = 1:2:31;
+total = numel(harmonic);
+voltage_rms = (4/pi)*(1/sqrt(2))*Vin_peak./harmonic;
+for k = 1:total
+    flux_density_harmonic = voltage_rms(k)/(4.44*Npri*frequency*harmonic(k)*core_area/1e6);
+    PL_h = a*(f*harmonic(k))^c*(flux_density_harmonic*10)^d;
+    core_harmonic_loss(k) = PL_h*core_volume/1e6;
+end
+core_loss = sum(core_harmonic_loss(:));
+total_loss = copper_loss + core_loss;
+efficiency = 100*Pout/(total_loss+Pout);
+
+%%
+% Mass calculation
+
+core_mass = 980; % grams // from catalogue
+copper_volume_pri = length_pri*strand_primary*conductor_area*1e-2; % cm^3
+copper_volume_sec = length_sec*strand_secondary*conductor_area*1e-2; % cm^3
+copper_density = 8.96; % g/cm^3
+copper_mass_pri = copper_volume_pri*copper_density; % grams
+copper_mass_sec = copper_volume_sec*copper_density; % grams
+copper_mass = copper_mass_pri + copper_mass_sec; % grams
+total_mass = core_mass+copper_mass; % grams
+
+%%
+% wire insulation
+pri_volts_per_turn = Vin_peak/Npri;
+% primary is 4 turns, 1 layer
+% no extra insulation is required
+sec_volts_per_turn = Vout_peak/Nsec;
+% secondary is 114 turns, 3 layer
+turns_per_layer = Nsec/secondary_layer;
+max_volt_dif = turns_per_layer*2*sec_volts_per_turn;
+% interlayer tape will be used for the insulation
+
+% triple insulated wire (AWG#26)
+% 707V for medical equipment
+diameter_with_insulation = 0.632; % mm
+
+wire_area = (diameter_with_insulation/2)^2*pi; % mm^2
+area_pri_wire = Npri*strand_primary*wire_area; % mm^2
+area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
+fill_factor_corrected = (area_sec_wire + area_sec_wire)/window_area;
+
+% no insulated wire is used on primary
+% triple insulated wire is used for secondary
+primary_one_turn = conductor_diameter*sqrt(strand_primary); % mm
+primary_layer = 1;
+primary_length1 = primary_one_turn*Npri/primary_layer; % mm
+primary_length2 = primary_one_turn*primary_layer; % mm
+secondary_one_turn = diameter_with_insulation*sqrt(strand_secondary); % mm
+secondary_layer = 4;
+secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
+secondary_length2 = secondary_one_turn*secondary_layer; % mm
+% core window dimensions:
+core_length1 = 94; % mm
+core_length2 = 22; % mm
+total_length1 = secondary_length1+primary_length1;
+if total_length1 < 0.9*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
+    fprintf('Design is OK\n');
+else
+    fprintf('Design is FAIL\n');
+end
+
+%%
+% temperature rise and cooling
+% windings
+copper_specific_heat = 0.385; % J/g0C
+energy = (copper_loss_pri)*(1e-1);
+temp_rise_pri = energy/(copper_specific_heat*copper_mass_pri); % 0C
+energy = (copper_loss_sec)*(1e-1);
+temp_rise_sec = energy/(copper_specific_heat*copper_mass_sec); % 0C
+% core
+% TEMP RISE DATA IS NOT PROVIDED
+
+
+%%
+% Equivalent circuit parameters
+turns_ratio = Npri/Nsec;
+% skin effect is eliminated so that the resistances are same as DC
+% resiatances
+R1 = resistance_pri; % Ohms
+R2 = resistance_sec; % Ohms
+R2ref = R2*turns_ratio^2; % Ohms 
+Rc = Vpri_peak^2/core_loss; % Ohms
+
+% Magnetic field intensity calculation
+% relative permeability figure
+I = imread('permeability.png');
+figure;
+imshow(I);
+mur = 4000; % from the figure provided by magnetics
+mu0 = 4*pi*1e-7;
+mu = mur*mu0;
+%reluctance = core_length*1e-3/(core_area*1e-6*mur*mu0); % H^-1
+H = flux_density/mu; % Amperes
+mmf_drop = H*core_length/1000;
+Isec_ref = (1/sqrt(2))*(1/turns_ratio)*(Npri*Ipri_rms*sqrt(2)-mmf_drop)/Nsec;
+%magnetizing_current = mmf_drop/Npri;
+% MMFpri = Npri*Ipri_rms*sqrt(2);
+% MMFsec = Nsec*Isec_rms*sqrt(2);
+%sec_current_peak = (Npri*Ipri_rms*sqrt(2)-flux_density*Ac*1e-6*reluctance)/Nsec;
+Im = sqrt(Ipri_rms^2-Isec_ref^2);
+Xm = Vpri_rms/Im; % Ohms
+Lm = Xm/(2*pi*frequency); % Henry
+
+% leakage inductance
+% NOT YET ACCOMPLISHED
+
