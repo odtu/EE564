@@ -26,7 +26,7 @@ imshow(pic);
 B=1.2;  % to decrease the losses flux density is choosen low
 Ip=S/Vp; % primary current 
 Is=S/Vs; % secondary current 
-Vt=15; % volts per turn
+Vt=100; % volts per turn
 Np=round(Vp/Vt); %primary turn number
 Ns=round(Vs/Vt); %secondary turn number
 
@@ -41,6 +41,26 @@ Eu=Ac/(2*D); % the factor 1/2 appears because the assembling of every winding of
 core_shape = imread('shell_type_transformer.png');
 figure;
 imshow(core_shape);
+
+%% wire selection
+J=3; % current density
+Ap=Ip/J; %mm^2
+As=Is/J; %mm^2
+
+% Primary side
+% it is used 10*6 mm^2 
+% paralel branch 0.5 mm insulation. 0.5*3=1.5mm
+wp_width=10;
+winding_width=wp_width*4+1.5
+winding_thickness=winding_width*Np/5+(Np-1)*0.5
+
+% Secondary side
+% From the awg
+area=[0.823 1.04 1.31 1.65 2.08 2.62 3.31 4.17 5.26 6.63 8.37 10.5 13.3];
+
+
+
+
 
 
 
