@@ -1,0 +1,45 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>Transformer Design for a X-Ray Device</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"><meta name="description" content="In this report, it is supposed to design a high-frequency, high-voltage transformer that will be used in a X-Ray device.The transformer design will be given step by step."></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Transformer Design for a X-Ray Device"><div class="titlepage"><div><div><h1 class="title"><a name="d178e1"></a>Transformer Design for a X-Ray Device</h1></div><div><h2 class="subtitle">high-frequency, high-voltage transformer that will be used in a X-Ray device</h2></div><div><div class="author"><h3 class="author"><span class="firstname">H&uuml;seyin Y&Uuml;R&Uuml;K</span></h3></div></div><div><p class="copyright">Copyright &copy; 2016 Hyuruk</p></div><div><p class="pubdate">09-Apr-2016 11:46:22</p></div><div><div class="abstract" title="Abstract"><p class="title"><b>Abstract</b></p><p>In this report, it is supposed to design a high-frequency, high-voltage transformer that will be used in a X-Ray device.The transformer design will be given step by step.</p></div></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#d178e23">1. Introduction</a></span></dt><dt><span class="chapter"><a href="#d178e32">2. Core Selection</a></span></dt></dl></div><div class="chapter" title="Chapter&nbsp;1.&nbsp;Introduction"><div class="titlepage"><div><div><h2 class="title"><a name="d178e23"></a>Chapter&nbsp;1.&nbsp;Introduction</h2></div></div></div><p>
+    </p><pre class="programlisting">The specs of the transformer are as follows:
+Single Phase, High Frequency High Voltage Transformer
+Primary Winding Voltage &plusmn; 417 V (peak to peak 834 V for pulsing)
+Secondary Winding Voltage &plusmn; 12.5 kV (peak to peak 25 kV for pulsing)
+Rated Power 30 kW (for maximum 100 milisecond)
+Switching Frequency Minimum 100 kHz
+Ambient Temperature 0-40 &deg;C</pre><p>
+</p></div><div class="chapter" title="Chapter&nbsp;2.&nbsp;Core Selection"><div class="titlepage"><div><div><h2 class="title"><a name="d178e32"></a>Chapter&nbsp;2.&nbsp;Core Selection</h2></div></div></div><pre xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd"><span style="color:green">%Core Selection by WaAc product</span>
+<span style="color:green">% The power handling capacity of a transformer core can also be determined by its</span>
+<span style="color:green">% WaAc product, where Wa is the available core window area, and Ac is the effective</span>
+<span style="color:green">% core cross-sectional area. </span>
+<span style="color:green">% Area Product Distribution (WaAc)</span>
+<span style="color:green">% WaAc = (Po * Dcma) / (Kt * Bmax * f)</span>
+<span style="color:green">% where</span>
+<span style="color:green">% WaAc = Product of window area and core area (cm4)</span>
+<span style="color:green">% Po = Power Out (watts)</span>
+<span style="color:green">% Dcma = Current Density (cir. mils/amp)</span>
+<span style="color:green">% Bmax = Flux Density (gauss)</span>
+<span style="color:green">% &#402; = frequency (hertz)</span>
+<span style="color:green">% Kt = Topology constant  (Full-bridge = 0.0014)</span>
+Po = 30 * 10^3;
+f = 100 * 10^3;
+Kt = 0.0014;
+Dcma = 4.5 * 10^2 * 1.2732; 
+<span style="color:green">% to convert square mils to circular mils multiply by 1.2732</span>
+<span style="color:green">% For ex. 500 cm/A ~= 400 A/cm^2</span>
+Bmax = 0.1 * 10^4;
+WaAc = Po * Dcma / (Kt * Bmax * f);
+</pre><p>
+    </p><pre class="programlisting">Using the equation shown above, the WaAc product is calculated.
+
+WaAc =  122.7729
+
+Then the Area Product Distribution (WaAc) Chart is used to select the appropriate core.
+
+From the Magnetics Ferrite Catalog (2013) U core is selected. The detail are given below.
+</pre><p>
+    <span class="inlinemediaobject"><img src="./transformer_for_xray_report_html_files/image-002-copied.png" height="228" align="left"></span>
+    </p><pre class="programlisting">U cores are ideal for power transformer applications. The long legs of U core support low 
+leakage inductance designs and facilitate superior voltage isolation.</pre><p>
+    <span class="inlinemediaobject"><img src="./transformer_for_xray_report_html_files/image-003-copied.png" width="580" align="left"></span>
+</p></div></div></body></html>
