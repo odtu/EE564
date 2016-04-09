@@ -15,7 +15,6 @@ Vout = 12.5 * 10^3;      % input parameter
 Vp_peak = Vin * 4 / pi();    % 1st harmonic peak value
 Vs_peak = Vout * 4 / pi();    % 1st harmonic peak value
 B = 0.2 * 10^4;             % operating B value
-Ac = 645 * 10^-2;           % Ae effective are for the choosen ferrite
 n_eff = 0.98;               % 98% efficiency assumed
 Vp_rms = Vp_peak / sqrt(2);    % rms value
 Vs_rms = Vs_peak / sqrt(2);   % rms value
