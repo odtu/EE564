@@ -41,7 +41,7 @@ Is_rms      = Prated/Vs_f_rms;
 % it is decided to use T material. It is possible to find its parametets
 % below:
 %
-%% <<Tmaterial.PNG>>
+% <<Tmaterial.PNG>>
 %
 
 %% Choosing Operation Flux Density
