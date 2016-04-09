@@ -21,15 +21,24 @@
 % Bmax = Flux Density (gauss)
 % ƒ = frequency (hertz)
 % Kt = Topology constant  (Full-bridge = 0.0014)
-Po = 30 * 10^3;     % input parameter
-f = 100 * 10^3;     % input parameter
+Po = 30 * 10^3;     % input parameter [W]
+f = 100 * 10^3;     % input parameter [Hz]
 Kt = 0.0014;        
 % for cir. mils to mm^2 see below link
 % conversion see http://www.convertunits.com/from/mm%5E2/to/circular+mil
 % 1mm^2 ~1973.5 cir. mils
-J = 2.5;            % current density A/mm^2
-Dcma = 1973.5 / J; 
+J = 2.5;            % current density [A/mm^2]
+Dcma = 1973.5 / J;  % [cir. mils/A] 
 Bmax = 0.47 * 10^4; % P type core has the 0.47T max. flux density
-WaAc = Po * Dcma / (Kt * Bmax * f)
+WaAc = Po * Dcma / (Kt * Bmax * f); 
+
+% selected core dimensions [mm]
+A_dim = 101.6;      
+B_dim = 57.1;
+C_dim = 25.4;
+D_dim = 31.7;
+E_dim = 50.8;
+Ac = 645 * 10^-2;           % Ae effective are for the choosen ferrite
+
 
 %%%%%%
