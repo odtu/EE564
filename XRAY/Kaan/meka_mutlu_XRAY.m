@@ -89,8 +89,29 @@ xlabel('Flux Density [mT]');
 ylabel('Core loss [W]');
 title('W_{Core loss} spread over B');
 %%
-% To be able to operate in a condition with less core loss 300mT is
-% selected as operation flux density.
+% This plot shows us selecting an arbitrary operation point may result bad
+% efficiecny. Selecting the 2nd minimum point 210mT may be an advantage to
+% not have a bigger transformer and still have less core lose. But if the
+% absolute minimum point is considered and 80mT is selected, than core loss
+% will be 85% smaller. It may mean having 2.5 times bigger transformer but
+% it is going to be possible to compansate this value by changing number of
+% turns. Also here, it is needed to be asked: "Should it be really small?". 
+% Perhaps this XRAY machine will be put in somewhere and stay there until 
+% someone needs to clean under it. A small research is done about 
+% "portable" XRAY machines. Here is the smallest result:
+%
+% <<Portable_XRAY1.PNG>>
+%
+% This XRAY machine is for dentists and just 60W. So our transformer is 
+% used for something bigger:
+%
+% <<Portable_XRAY2.PNG>>
+%
+% This one's specs are given and when maximum points of voltage and current
+% are multiplied result is 24kW and still smaller than our application. In
+% such big machines, size of transformer may be ignored, its weight is also
+% not so dominant. To be able to operate in a condition with less core loss 
+% 80mT is selected as operation flux density.
 
 %% Determination of Core Dimensions & Number of turns
 
@@ -120,15 +141,13 @@ title('W_{Core loss} spread over B');
 %
 %
 %%
-    function [output] = optimize_B()
-        
+    function [output] = optimize_B()   
         B_given = [80 90 100 200 300];
         Coreloss_coef = [25 32 45 120 900];
         B_req = 80:10:300;
         for i=1:length(B_req)
             Coreloss_coef2(i)=lagrange(B_given, Coreloss_coef, B_req(i));
-            Coreloss(i) = B_req(i)*Coreloss_coef2(1)/Coreloss_coef2(i);
-            
+            Coreloss(i) = Coreloss_coef2(i)*B_req(1)/B_req(i);        
         end;
         output = B_req(find(Coreloss==min(Coreloss)));
     end
