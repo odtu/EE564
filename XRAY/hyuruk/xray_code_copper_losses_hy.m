@@ -1,4 +1,4 @@
-% cupper losses will be calculated
+% copper losses will be calculated
 % length of one turn coil will be calculated as follow
 % primary and secondary window area assumed equal
 % radius of the coil, radius_acoil = C/2 + D/2; [mm]
@@ -28,7 +28,7 @@ tot_length_coil_sec = round(Ns) * length_acoil * 10^-3; % [m]
 res_coil_sec = ohm_AWG26 * tot_length_coil_sec / Nstrand_sec;   % [ohm]
 loss_coil_sec = Is^2 * res_coil_sec;       % [W]
 
-tot_loss_cupper = loss_coil_pri + loss_coil_sec;    %[W]
+tot_loss_copper = loss_coil_pri + loss_coil_sec;    %[W]
 %%%%%%
 
 
