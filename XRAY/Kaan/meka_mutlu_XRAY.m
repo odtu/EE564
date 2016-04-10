@@ -11,7 +11,6 @@ function []=meka_mutlu_XRAY()
 
 %% Specifications 
 %%
-%
 % 
 % * *Single Phase, High Frequency High Voltage Transformer*
 % * *Primary Winding Voltage:* ± 417 V (peak to peak 834 V for pulsing)
@@ -19,19 +18,19 @@ function []=meka_mutlu_XRAY()
 % * *Rated Power:* 30 kW (for maximum 100 millisecond) 
 % * *Switching Frequency:* Minimum 100 kHz
 % * *Ambient Temperature:* 0-40 °C
-Prated      = 30e3;
-fs          = 100e3;
+Prated      = 30e3; % Rated power [W]
+fs          = 100e3; % switching frequency [Hz]
 %%
-Vp_peak     = 417;
-Vp_fund_peak= Vp_peak*4/pi;
-Vp_f_rms    = Vp_fund_peak/sqrt(2);
+Vp_peak     = 417; % Primary side peak voltage [V]
+Vp_fund_peak= Vp_peak*4/pi; % Peak of fundamental of primary voltage [V]
+Vp_f_rms    = Vp_fund_peak/sqrt(2); % RMS value of fundamental [V]
 %%
-Vs_peak     = 12.5e3;
-Vs_fund_peak= Vs_peak*4/pi;
-Vs_f_rms    = Vs_fund_peak/sqrt(2);
+Vs_peak     = 12.5e3; % Secondary side peak voltage [V]
+Vs_fund_peak= Vs_peak*4/pi; % Peak of fundamental of secondary voltage [V]
+Vs_f_rms    = Vs_fund_peak/sqrt(2); % RMS value of fundamental [V]
 %%
-Ip_rms      = Prated/Vp_f_rms;
-Is_rms      = Prated/Vs_f_rms;
+Ip_rms      = Prated/Vp_f_rms; % Primary side RMS current [A]
+Is_rms      = Prated/Vs_f_rms;  % Secondary side RMS current [A]
 
 %% Choosing Initial Material
 
@@ -48,7 +47,6 @@ Is_rms      = Prated/Vs_f_rms;
 % below:
 %
 % <<Tmaterial.PNG>>
-%
 
 %% Choosing Operation Flux Density
 
@@ -74,6 +72,26 @@ Is_rms      = Prated/Vs_f_rms;
 % area and weight are proportional, an optimization will be made over core 
 % loss.
 
+B_opr = optimize_B();
+
+%%
+% Flux density vs core loss graphic has some missing points due to its
+% nonlinearity. To be able to find required missing points Lagrange
+% polynomial method is used (Function used in this project was written by 
+% me during my 3rd class undergraduate studies). After completion is done, 
+% assuming area effects weight proportionally, a basic multiplication is 
+% made. In coreloss plot unit and magnitude aren't considered but result 
+% shows how core loss changes as operation point of flux density is 
+% increased. 
+plot(B_req, Coreloss);
+set(gca,'FontSize',12);
+xlabel('Flux Density [mT]');
+ylabel('Core loss [W]');
+title('W_{Core loss} spread over B');
+%%
+% To be able to operate in a condition with less core loss 300mT is
+% selected as operation flux density.
+
 %% Determination of Core Dimensions & Number of turns
 
 %%
@@ -97,9 +115,38 @@ Is_rms      = Prated/Vs_f_rms;
 
 %% Determination of mass, cost etc.
 
-
 %%
 % Comments
 %
 %
+%%
+    function [output] = optimize_B()
+        
+        B_given = [80 90 100 200 300];
+        Coreloss_coef = [25 32 45 120 900];
+        B_req = 80:10:300;
+        for i=1:length(B_req)
+            Coreloss_coef2(i)=lagrange(B_given, Coreloss_coef, B_req(i));
+            Coreloss(i) = B_req(i)*Coreloss_coef2(1)/Coreloss_coef2(i);
+            
+        end;
+        output = B_req(find(Coreloss==min(Coreloss)));
+    end
+%%
+    function L=lagrange(x,y,k)
+        n=length(x);
+        l=1;
+        L=0;
+        for i=1:n
+            for j=1:n
+                if i~=j
+                    l=l*(k-x(j))/(x(i)-x(j));
+                end;
+            end;
+            L=L+l*y(i);
+            l=1;
+        end; 
+    end;
+%%
+
 end
