@@ -740,7 +740,7 @@ primary_length1 = primary_one_turn*Npri/primary_layer; % mm
 primary_length2 = primary_one_turn*primary_layer; % mm
 secondary_one_turn = diameter_with_insulation*sqrt(strand_secondary); % mm
 secondary_layer = 4;
-secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
+secondary_length1 = secondary_one_turn*round(Nsec/secondary_layer); % mm
 secondary_length2 = secondary_one_turn*secondary_layer; % mm
 % core window dimensions:
 core_length1 = 94; % mm
@@ -797,3 +797,7 @@ Lm = Xm/(2*pi*frequency); % Henry
 % leakage inductance
 % NOT YET ACCOMPLISHED
 
+% transformer drawing
+I = imread('trafo_cizim.jpg');
+figure;
+imshow(I);
