@@ -13,7 +13,6 @@ area_AWG26 = 0.129;             % [mm^2]
 ohm_AWG26 = 0.13386;            % [Ohm/m]
 Icarry_cap_AWG26_J = J * area_AWG26; % [A] current rate by considering J value
 
-radius_acoil = C_dim/2 + D_dim/2;   % [mm]
 length_acoil = 2 * pi()* radius_acoil;  % [mm]
 
 % primary side loss calculation
