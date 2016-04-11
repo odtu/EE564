@@ -844,9 +844,21 @@ X2ref = X2*turns_ratio^2; % Ohms
 per_unit = (X1+X2ref)/Zbase;
 
 
+% winding capacitances
+% adverse effects are:
+% 1. premature resonance
+% 2. large primary current spikes (square wave)
+% 3. electrostatic coupling to other circuits
+
+
 %%
 % transformer drawing
 I = imread('trafo_cizim.jpg');
+figure;
+imshow(I);
+
+%%
+I = imread('trafo_esdeger.jpg');
 figure;
 imshow(I);
 
