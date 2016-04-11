@@ -626,6 +626,7 @@ core_volume = 202e3; % mm^3
 area_product = 90.6; % cm^4
 window_area = area_product*1e4/core_area; % mm^2
 
+
 %%
 % turn numbers
 flux_density = 0.3; % Tesla
@@ -635,33 +636,42 @@ Npri = round(Vpri_rms/(4.44*frequency*flux));
 Nsec = round(Vsec_rms/(4.44*frequency*flux));
 
 %%
-% fill factor
+% Corrected flux density
+flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6);
+
+
+%%
+% conductor properties
+% AWG#26
 conductor_diameter = 0.40386; % mm
 conductor_area = (conductor_diameter/2)^2*pi; % mm^2
 ohms_per_km = 133.8568; % ohm/km
 current_rating = 0.361; % Amps
+
+%%
+% fill factor
 strand_primary = ceil(Ipri_rms/current_rating);
 strand_secondary = ceil(Isec_rms/current_rating);
 area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
 area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
-fill_factor = (area_sec_winding + area_sec_winding)/window_area;
+fill_factor = 2*(area_sec_winding + area_sec_winding)/window_area;
 
 %%
 % winding geometry
 % here, perfect geometry is assumed with no insulation
-primary_one_turn = conductor_diameter*sqrt(strand_primary); % mm
 primary_layer = 1;
+primary_one_turn = conductor_diameter*ceil(sqrt(strand_primary))*sqrt(2); % mm
 primary_length1 = primary_one_turn*Npri/primary_layer; % mm
 primary_length2 = primary_one_turn*primary_layer; % mm
-secondary_one_turn = conductor_diameter*sqrt(strand_secondary); % mm
-secondary_layer = 3;
+secondary_layer = 4;
+secondary_one_turn = conductor_diameter*ceil(sqrt(strand_secondary))*sqrt(2); % mm
 secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
 secondary_length2 = secondary_one_turn*secondary_layer; % mm
 % core window dimensions:
 core_length1 = 94; % mm
 core_length2 = 22; % mm
 total_length1 = secondary_length1+primary_length1;
-if total_length1 < 0.8*core_length1 && primary_length2 < 0.8*core_length2 && secondary_length2 < 0.8*core_length2
+if total_length1 < 0.9*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
     fprintf('Design is OK\n');
 else
     fprintf('Design is FAIL\n');
@@ -669,16 +679,17 @@ end
 
 %%
 % copper loss
-mean_length_turn = 4*sqrt(core_area)*1.2/10; % cm
+mean_length_turn = pi*(primary_layer*primary_one_turn+sqrt(core_area))/10; % cm
 length_pri = Npri*mean_length_turn; % cm
 ohms_km_pri = ohms_per_km/strand_primary;
 resistance_pri = ohms_km_pri*length_pri/1000; % ohms
+mean_length_turn = pi*(secondary_layer*secondary_one_turn+sqrt(core_area))/10; % cm
 length_sec = Nsec*mean_length_turn; % cm
 ohms_km_sec = ohms_per_km/strand_secondary;
 resistance_sec = ohms_km_sec*length_sec/1000; % ohms
-copper_loss_pri = Ipri_rms^2*resistance_pri;
-copper_loss_sec = Isec_rms^2*resistance_sec;
-copper_loss = copper_loss_pri+copper_loss_sec;
+copper_loss_pri = Ipri_rms^2*resistance_pri; % Watts
+copper_loss_sec = Isec_rms^2*resistance_sec; % Watts
+copper_loss = copper_loss_pri+copper_loss_sec; % Watts
 
 %%
 % core loss
@@ -692,13 +703,14 @@ harmonic = 1:2:31;
 total = numel(harmonic);
 voltage_rms = (4/pi)*(1/sqrt(2))*Vin_peak./harmonic;
 for k = 1:total
-    flux_density_harmonic = voltage_rms(k)/(4.44*Npri*frequency*harmonic(k)*core_area/1e6);
-    PL_h = a*(f*harmonic(k))^c*(flux_density_harmonic*10)^d;
-    core_harmonic_loss(k) = PL_h*core_volume/1e6;
+    flux_density_harmonic = voltage_rms(k)/(4.44*Npri*frequency*harmonic(k)*core_area/1e6); % Tesla
+    PL_h = a*(f*harmonic(k))^c*(flux_density_harmonic*10)^d; % Watts/cm^3
+    core_harmonic_loss(k) = PL_h*core_volume/1e6; % Watts
 end
-core_loss = sum(core_harmonic_loss(:));
-total_loss = copper_loss + core_loss;
-efficiency = 100*Pout/(total_loss+Pout);
+core_loss = sum(core_harmonic_loss(:)); % Watts
+total_loss = copper_loss + core_loss; % Watts
+efficiency = 100*Pout/(total_loss+Pout); % percent
+
 
 %%
 % Mass calculation
@@ -710,7 +722,7 @@ copper_density = 8.96; % g/cm^3
 copper_mass_pri = copper_volume_pri*copper_density; % grams
 copper_mass_sec = copper_volume_sec*copper_density; % grams
 copper_mass = copper_mass_pri + copper_mass_sec; % grams
-total_mass = core_mass+copper_mass; % grams
+total_mass = (core_mass+copper_mass)/1e3; % kg
 
 %%
 % wire insulation
@@ -718,10 +730,10 @@ pri_volts_per_turn = Vin_peak/Npri;
 % primary is 4 turns, 1 layer
 % no extra insulation is required
 sec_volts_per_turn = Vout_peak/Nsec;
-% secondary is 114 turns, 3 layer
-turns_per_layer = Nsec/secondary_layer;
+% secondary is 114 turns, 4 layer
+turns_per_layer = ceil(Nsec/secondary_layer);
 max_volt_dif = turns_per_layer*2*sec_volts_per_turn;
-% interlayer tape will be used for the insulation
+% interlayer tape will be used for the insulation between each layer
 
 % triple insulated wire (AWG#26)
 % 707V for medical equipment
@@ -732,25 +744,27 @@ area_pri_wire = Npri*strand_primary*wire_area; % mm^2
 area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
 fill_factor_corrected = (area_sec_wire + area_sec_wire)/window_area;
 
+
 % no insulated wire is used on primary
 % triple insulated wire is used for secondary
-primary_one_turn = conductor_diameter*sqrt(strand_primary); % mm
 primary_layer = 1;
+primary_one_turn = conductor_diameter*ceil(sqrt(strand_primary))*sqrt(2); % mm
 primary_length1 = primary_one_turn*Npri/primary_layer; % mm
 primary_length2 = primary_one_turn*primary_layer; % mm
-secondary_one_turn = diameter_with_insulation*sqrt(strand_secondary); % mm
-secondary_layer = 4;
+secondary_layer = 6;
+secondary_one_turn = diameter_with_insulation*ceil(sqrt(strand_secondary))*sqrt(2); % mm
 secondary_length1 = secondary_one_turn*round(Nsec/secondary_layer); % mm
 secondary_length2 = secondary_one_turn*secondary_layer; % mm
 % core window dimensions:
 core_length1 = 94; % mm
 core_length2 = 22; % mm
 total_length1 = secondary_length1+primary_length1;
-if total_length1 < 0.9*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
+if total_length1 < 0.91*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
     fprintf('Design is OK\n');
 else
     fprintf('Design is FAIL\n');
 end
+
 
 %%
 % temperature rise and cooling
@@ -782,22 +796,21 @@ imshow(I);
 mur = 4000; % from the figure provided by magnetics
 mu0 = 4*pi*1e-7;
 mu = mur*mu0;
-%reluctance = core_length*1e-3/(core_area*1e-6*mur*mu0); % H^-1
 H = flux_density/mu; % Amperes
 mmf_drop = H*core_length/1000;
-Isec_ref = (1/sqrt(2))*(1/turns_ratio)*(Npri*Ipri_rms*sqrt(2)-mmf_drop)/Nsec;
-%magnetizing_current = mmf_drop/Npri;
-% MMFpri = Npri*Ipri_rms*sqrt(2);
-% MMFsec = Nsec*Isec_rms*sqrt(2);
-%sec_current_peak = (Npri*Ipri_rms*sqrt(2)-flux_density*Ac*1e-6*reluctance)/Nsec;
-Im = sqrt(Ipri_rms^2-Isec_ref^2);
-Xm = Vpri_rms/Im; % Ohms
-Lm = Xm/(2*pi*frequency); % Henry
+magnetizing_current = mmf_drop/Npri; % Amps
+magnetizing_reactance = Vpri_rms/magnetizing_current; % Ohms
+Xm = magnetizing_reactance; % Ohms
+Lm = magnetizing_reactance/(2*pi*frequency);
+
 
 % leakage inductance
 % NOT YET ACCOMPLISHED
 
+
+%%
 % transformer drawing
 I = imread('trafo_cizim.jpg');
 figure;
 imshow(I);
+
