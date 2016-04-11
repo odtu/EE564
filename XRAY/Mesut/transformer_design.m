@@ -635,6 +635,7 @@ frequency = 100e3;
 Npri = round(Vpri_rms/(4.44*frequency*flux));
 Nsec = round(Vsec_rms/(4.44*frequency*flux));
 
+
 %%
 % Corrected flux density
 flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6);
@@ -679,12 +680,12 @@ end
 
 %%
 % copper loss
-mean_length_turn = pi*(primary_layer*primary_one_turn+sqrt(core_area))/10; % cm
-length_pri = Npri*mean_length_turn; % cm
+mean_length_turn_pri = pi*(primary_layer*primary_one_turn+sqrt(core_area))/10; % cm
+length_pri = Npri*mean_length_turn_pri; % cm
 ohms_km_pri = ohms_per_km/strand_primary;
 resistance_pri = ohms_km_pri*length_pri/1000; % ohms
-mean_length_turn = pi*(secondary_layer*secondary_one_turn+sqrt(core_area))/10; % cm
-length_sec = Nsec*mean_length_turn; % cm
+mean_length_turn_sec = pi*(secondary_layer*secondary_one_turn+sqrt(core_area))/10; % cm
+length_sec = Nsec*mean_length_turn_sec; % cm
 ohms_km_sec = ohms_per_km/strand_secondary;
 resistance_sec = ohms_km_sec*length_sec/1000; % ohms
 copper_loss_pri = Ipri_rms^2*resistance_pri; % Watts
@@ -780,6 +781,10 @@ temp_rise_sec = energy/(copper_specific_heat*copper_mass_sec); % 0C
 
 %%
 % Equivalent circuit parameters
+
+% transformer base impedance
+Zbase = Vpri_rms^2/Pout; % Ohms
+
 turns_ratio = Npri/Nsec;
 % skin effect is eliminated so that the resistances are same as DC
 % resiatances
@@ -797,15 +802,46 @@ mur = 4000; % from the figure provided by magnetics
 mu0 = 4*pi*1e-7;
 mu = mur*mu0;
 H = flux_density/mu; % Amperes
+
+% magnetizing inductance
 mmf_drop = H*core_length/1000;
 magnetizing_current = mmf_drop/Npri; % Amps
 magnetizing_reactance = Vpri_rms/magnetizing_current; % Ohms
 Xm = magnetizing_reactance; % Ohms
-Lm = magnetizing_reactance/(2*pi*frequency);
-
+Lm = magnetizing_reactance/(2*pi*frequency); % Henry
 
 % leakage inductance
-% NOT YET ACCOMPLISHED
+% MLT = mean_length_turn;
+% L1 = (1e-9*4*pi*MLT*Npri^2)*...
+%     (primary_length2+secondary_length2)/...
+%     (2*4.7); % Henries
+% X1 = L1*2*pi*frequency; % Ohms
+% 
+% L2 = (1e-9*4*pi*MLT*Nsec^2)*...
+%     (primary_length2+secondary_length2)/...
+%     (2*4.7); % Henries
+% X2 = L2*2*pi*frequency; % Ohms
+% X2ref = X2*turns_ratio^2;
+
+% MLT = mean_length_turn_pri;
+% L1 = (4*pi*1e-7*MLT*Npri^2)*1e-3*...
+%     (primary_length1+secondary_length1)/...
+%     (primary_length2/10); % Henries
+% X1 = L1*2*pi*frequency; % Ohms
+
+% leakage inductance
+MLT = mean_length_turn_pri; % cm
+L1 = (pi*1e-9*MLT*Npri^2)*...
+    (primary_length1+secondary_length1)/...
+    (primary_length2); % Henries
+X1 = L1*2*pi*frequency; % Ohms
+L2 = (pi*1e-9*MLT*Nsec^2)*...
+    (primary_length1+secondary_length1)/...
+    (secondary_length2); % Henries
+X2 = L2*2*pi*frequency; % Ohms
+X2ref = X2*turns_ratio^2; % Ohms
+
+per_unit = (X1+X2ref)/Zbase;
 
 
 %%
