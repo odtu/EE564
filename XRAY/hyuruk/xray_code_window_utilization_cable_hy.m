@@ -21,9 +21,8 @@ s3 = 0.6;
 s4 = 1;
 Ku = s1*s2*s3*s4;
 
-Wa = 2 * D_dim*E_dim * 10^-2; % available core window area cm^2
-Aws = Ku * Wa * 10^2 / (2.1 * Ns);   % mm^2
-Awp = 1.1 * Ns * Aws / Np;          % mm^2
+Aws = Ku * Wa * 10^2 / (2.1 * Ns);   % [mm^2]
+Awp = 1.1 * Ns * Aws / Np;          % [mm^2]
     
 % mm^2   %requirred wire size for choosen current density 
 Awp_req = Ip / J;      
