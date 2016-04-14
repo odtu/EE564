@@ -23,7 +23,7 @@ loss_coil_pri = Ip^2 * res_coil_pri;       % [W]
 
 % secondary side loss calculation
 Nstrand_sec = ceil(Is / Icarry_cap_AWG26);  % number of AWG26 size cable
-tot_length_coil_sec = round(Ns) * length_acoil * 10^-3; % [m]
+tot_length_coil_sec = ceil(Ns) * length_acoil * 10^-3; % [m]
 res_coil_sec = ohm_AWG26 * tot_length_coil_sec / Nstrand_sec;   % [ohm]
 loss_coil_sec = Is^2 * res_coil_sec;       % [W]
 

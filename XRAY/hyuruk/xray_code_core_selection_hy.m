@@ -71,9 +71,7 @@ Al = 5080;                  %[nH/1T^2]
 mu_r = 5000;                %[-]
 graph_core_loss_100deg = 350;   %[mW/cm^3]
 graph_core_loss_40deg = graph_core_loss_100deg * 2; %[mW/cm^3]
-price_core = 2*17.38;         % [$]
-
-
+price_core = 2*3.25;         % [$]
 
 
 %%%%%%

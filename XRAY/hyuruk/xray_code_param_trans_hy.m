@@ -6,8 +6,4 @@ mu0 = 4 * pi() * 10^-7;     %[-]
 Reluctance = le_dim * 10^-3 / (mu_r*mu0*Ac*10^-4);
 Lm = round(Np)^2 / Reluctance * 10^3;     %[mH]
 Lm_Al = Al*round(Np)^2*10^-6;  %[mH]
-H_field = B * 10^-4 / (mu_r*mu0);
-Ns_desired = ((round(Np)*Ip)-H_field) / Is;
-H_field_desired = (round(Np)*Ip) - (ceil(Ns_desired)*Is);
-B_desired = H_field_desired * (mu_r*mu0) / 10^-4;
 %%%%%%
