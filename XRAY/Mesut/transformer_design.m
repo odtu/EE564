@@ -53,7 +53,6 @@
 %%
 % Ambient Temperature 0-40 °C
 %% DESIGN INPUTS
-
 Vin_peak = 417; % volts
 Vpri_peak = Vin_peak*4/pi; % volts
 Vpri_rms = Vpri_peak/sqrt(2); % volts
@@ -224,6 +223,8 @@ end
 total_loss = copper_loss + core_loss;
 %% Efficiency
 efficiency = Pout./(total_loss+Pout);
+%%
+% The efficiency data is stored for further comparison
 efficiency1 = efficiency;
 
 
@@ -316,166 +317,170 @@ legend('Core Loss','Copper Loss','Total Loss');
 % bla bla bla
 
 
-%% ANOTHER GALAXY
-% The following is the analysis with 14 different types of U,I ferrite
-
 clearvars -EXCEPT efficiency1
-
-%%
-% inputs
-Vin_peak = 417;
-Vpri_peak = Vin_peak*4/pi;
-Vpri_rms = Vpri_peak/sqrt(2);
-Vout_peak = 12500;
-Vsec_peak = Vout_peak*4/pi;
-Vsec_rms = Vsec_peak/sqrt(2);
-Pout = 30000;
-Ipri_rms = Pout/Vpri_rms;
-Isec_rms = Pout/Vsec_rms;
-
-% core data
+%% Core Data-2
+% The second set of the cores is composed of I cores data of which
+% are shown below:
 elements = 14;
-core = 1:14;
+core = 1:elements;
 core_length = [29.2,24.6,95.8,68.9,83.4,64.3,83.4,353,257,354,353,480,308,245]; %mm
 core_area = [12,11.5,39.7,80,40.4,40.3,80.8,452,450,840,905,560,645,645]; %mm^2
 core_volume = [350,283,4130,4170,3370,2590,6740,160000,115000,297000,319000,268800,199000,158000]; %mm^3
 area_product = [0.02,0.01,0.63,0.78,0.57,0.32,1.13,91.4,45.8,173,185,286,121,60.7]*1e4; %mm^4
 core_weight = [1.8,1.5,19,29,17,13,34,800,600,1490,1600,1360,988,784]; %grams
 window_area = area_product./core_area;
-%core_area = 100:10:2000; % mm^2
-%window_area = 1.5*core_area; % mm^2
+%%
+% Reassignment of known variables
+%%
+% Inputs
+Vin_peak = 417; % volts
+Vpri_peak = Vin_peak*4/pi; % volts
+Vpri_rms = Vpri_peak/sqrt(2); % volts
+Vout_peak = 12500; % volts
+Vsec_peak = Vout_peak*4/pi; % volts
+Vsec_rms = Vsec_peak/sqrt(2); % volts
+Pout = 30000;  % watts
+Ipri_rms = Pout/Vpri_rms; % amps
+Isec_rms = Pout/Vsec_rms; % amps
+%%
+% Operating point
 flux_density = 0.3; % Tesla
 flux = flux_density*core_area/1e6; % Weber
-frequency = 100e3;
+frequency = 100e3; % Hz
+%% Number of Turns
+% Calculation of number of turns from induced voltage
 Npri = round(Vpri_rms./(4.44*frequency*flux));
 Nsec = round(Vsec_rms./(4.44*frequency*flux));
-
+%% Conductor
 conductor_diameter = 0.40386; % mm
 conductor_area = (conductor_diameter/2)^2*pi; % mm^2
 ohms_per_km = 133.8568; % ohm/km
 current_rating = 0.361; % Amps
+%%
+% By using the required current information, the required number of strands
+% on each side are calculated by:
 strand_primary = ceil(Ipri_rms/current_rating);
 strand_secondary = ceil(Isec_rms/current_rating);
-
+%% Fill Factor
 area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
 area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
-fill_factor = (area_sec_winding + area_sec_winding)./window_area;
-
+fill_factor = (area_pri_winding + area_sec_winding)./window_area;
+%% Windings Resistances
 mean_length_turn = 4*sqrt(core_area)*1.2/10; % cm
-
 length_pri = Npri.*mean_length_turn; % cm
 ohms_km_pri = ohms_per_km/strand_primary;
 resistance_pri = ohms_km_pri*length_pri/1000; % ohms
-
 length_sec = Nsec.*mean_length_turn; % cm
 ohms_km_sec = ohms_per_km/strand_secondary;
 resistance_sec = ohms_km_sec*length_sec/1000; % ohms
-
+%% Copper Loss
 copper_loss_pri = Ipri_rms^2*resistance_pri;
 copper_loss_sec = Isec_rms^2*resistance_sec;
 copper_loss = copper_loss_pri+copper_loss_sec;
-
-% Using curve fitting
-% P material @80 Cdegrees
+%% Core Loss
 a = 0.0434;
 c = 1.63;
 d = 2.62;
 f = 100; % kHz
-B = 0.3*10; % kilogtauss
-PL = a*f^c*B^d; % mW/cm^3
-core_loss = PL*core_volume/1e6; % Watts
-
-
 harmonic = 1:2:31;
 total = numel(harmonic);
 voltage_rms = (4/pi)*(1/sqrt(2))*Vin_peak./harmonic;
-
+core_harmonic_loss = zeros(elements,total);
+core_loss = zeros(1,elements);
 for l = 1:elements
     for k = 1:total
         flux_density_harmonic = voltage_rms(k)/(4.44*Npri(l)*frequency*harmonic(k)*core_area(l)/1e6);
         PL_h = a*(f*harmonic(k))^c*(flux_density_harmonic*10)^d;
         core_harmonic_loss(l,k) = PL_h*core_volume(l)/1e6;
     end
-    total_core_loss(l) = sum(core_harmonic_loss(l,:));
+    core_loss(l) = sum(core_harmonic_loss(l,:));
 end
-
-total_loss = copper_loss + total_core_loss;
+%% Total Loss
+total_loss = copper_loss + core_loss;
+%% Efficiency
 efficiency = Pout./(total_loss+Pout);
+%%
+% The efficiency data is stored for further comparison
 efficiency2 = efficiency;
 efficiency2(15:17) = 0;
 
-figure;
+%% Results for the 2nd Set of Cores
+% Primary turn number, secondary turn number and fill factor
 
-subplot(3,3,1);
+figure;
+subplot(3,1,1);
 plot(core,Npri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Primary Turn Number','FontSize',10,'FontWeight','Bold');
-
-subplot(3,3,4);
+subplot(3,1,2);
 plot(core,Nsec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Secondary Turn Number','FontSize',10,'FontWeight','Bold');
-
-subplot(3,3,7);
+subplot(3,1,3);
 plot(core,fill_factor,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Fill Factor','FontSize',10,'FontWeight','Bold');
-ylim([0 1.1]);
+ylim([0 1]);
 
-subplot(3,3,2);
+%% 
+% Primary resiatance, secondary resistance
+subplot(2,1,1);
 plot(core,resistance_pri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Primary Resistance','FontSize',10,'FontWeight','Bold');
-
-subplot(3,3,5);
+subplot(2,1,2);
 plot(core,resistance_sec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Secondary Resistance','FontSize',10,'FontWeight','Bold');
 
-subplot(3,3,3);
+%%
+% Copper loss, core loss
+subplot(2,1,1);
 plot(core,copper_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Copper Loss (W)','FontSize',10,'FontWeight','Bold');
-ylim([0 1000]);
-
-subplot(3,3,6);
-plot(core,total_core_loss,'k- ','Linewidth',1.5);
+subplot(2,1,2);
+plot(core,core_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Core Loss (W)','FontSize',10,'FontWeight','Bold');
 
-subplot(3,3,9);
+%%
+% Total loss, efficiency
+subplot(2,1,1);
 plot(core,total_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
 xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Core Loss (W)','FontSize',10,'FontWeight','Bold');
-
+ylabel('Total Loss (W)','FontSize',10,'FontWeight','Bold');
+subplot(2,1,2);
+plot(core,100*efficiency,'k- ','Linewidth',1.5);
+grid on;
+set(gca,'FontSize',12);
+xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
 
 %%
-
+% Losses alltogether
 figure;
-
-plot(core,total_core_loss,'k-o','Linewidth',1.5);
+plot(core,core_loss,'k-o','Linewidth',1.5);
 hold on;
 plot(core,copper_loss,'r-o','Linewidth',1.5);
 hold on;
-plot(core,total_core_loss+copper_loss,'b-o','Linewidth',1.5);
-%hold on;
-%plot(core,efficiency,'m-o','Linewidth',1.5);
+plot(core,total_loss,'b-o','Linewidth',1.5);
 hold off;
 grid on;
 set(gca,'FontSize',12);
@@ -483,60 +488,46 @@ xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
 ylabel('Loss (W)','FontSize',10,'FontWeight','Bold');
 legend('Core Loss','Copper Loss','Total Loss');
 
+%% Observations From the Results of the 1st Core Set (EE)
+% bla bla bla
+% bla bla bla
 
-%%
-% figure;
-%
-% core = 1:17;
-%
-% plot(core,100*efficiency1,'r-o','Linewidth',1.5);
-% hold on;
-% plot(core,100*efficiency2,'b-o','Linewidth',1.5);
-% hold off;
-% grid on;
-% set(gca,'FontSize',12);
-% xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-% ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
-% ylim([90 100]);
 
-%%
-
-figure
-[hAx,hLine1,hLine2] = plotyy(core,total_loss,core,efficiency);
-
-title('Loss and Efficiency Analysis')
-xlabel('Core Number')
-
-ylabel(hAx(1),'Total Loss') % left y-axis
-ylabel(hAx(2),'Efficiency') % right y-axis
+%% Efficiency Comparison Between the Two Sets of Cores
+figure;
+core = 1:17;
+plot(core,100*efficiency1,'r-o','Linewidth',1.5);
+hold on;
+plot(core,100*efficiency2,'b-o','Linewidth',1.5);
+hold off;
 grid on;
-hLine1.LineStyle = '-';
-hLine2.LineStyle = '--';
-set(gca,'ytick',[0:400:4000]);
+set(gca,'FontSize',12);
+xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
+ylim([90 100]);
+
+%% CORE SELECTION
+% Discusssion
+% Discusssion
+% Discusssion
+% Discusssion
 
 
-
-%% SELECT CORE
-% E-I Ferrite core from magnetics
+%% SELECTED CORE PROPERTIES
+% Ee Ferrite core from magnetics
 % 49928E-C
-% material: P-type
-
+% material: P-type ferrite
 clear all;
-
+I = imread('selected_core.png');
+figure;
+imshow(I);
+title('Selected Core','FontSize',18,'FontWeight','Bold');
+I = imread('selected_core_geo.png');
+figure;
+imshow(I);
+title('Selected Core Geometry and Dimensions','FontSize',18,'FontWeight','Bold');
 %%
-% Inputs
-Vin_peak = 417;
-Vpri_peak = Vin_peak*4/pi;
-Vpri_rms = Vpri_peak/sqrt(2);
-Vout_peak = 12500;
-Vsec_peak = Vout_peak*4/pi;
-Vsec_rms = Vsec_peak/sqrt(2);
-Pout = 30000;
-Ipri_rms = Pout/Vpri_rms;
-Isec_rms = Pout/Vsec_rms;
-
-%%
-% core data
+% Selected Core Data
 AL = 6773; % nH/turn
 core_length = 274; % mm
 core_area = 738; % mm^2
@@ -544,31 +535,37 @@ core_volume = 202e3; % mm^3
 area_product = 90.6; % cm^4
 window_area = area_product*1e4/core_area; % mm^2
 
-
+%% DESIGN WITH THE SELECTED CORE
 %%
-% turn numbers
+% Inputs
+Vin_peak = 417; % volts
+Vpri_peak = Vin_peak*4/pi; % volts
+Vpri_rms = Vpri_peak/sqrt(2); % volts
+Vout_peak = 12500; % volts
+Vsec_peak = Vout_peak*4/pi; % volts
+Vsec_rms = Vsec_peak/sqrt(2); % volts
+Pout = 30000;  % watts
+Ipri_rms = Pout/Vpri_rms; % amps
+Isec_rms = Pout/Vsec_rms; % amps
+%%
+% Turn number calculation
 flux_density = 0.3; % Tesla
 flux = flux_density*core_area/1e6; % Weber
 frequency = 100e3;
 Npri = round(Vpri_rms/(4.44*frequency*flux));
 Nsec = round(Vsec_rms/(4.44*frequency*flux));
-
-
 %%
 % Corrected flux density
 flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6);
-
-
 %%
-% conductor properties
+% Conductor properties
 % AWG#26
 conductor_diameter = 0.40386; % mm
 conductor_area = (conductor_diameter/2)^2*pi; % mm^2
 ohms_per_km = 133.8568; % ohm/km
 current_rating = 0.361; % Amps
-
 %%
-% fill factor
+% Fill factor
 strand_primary = ceil(Ipri_rms/current_rating);
 strand_secondary = ceil(Isec_rms/current_rating);
 area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
@@ -576,8 +573,9 @@ area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
 fill_factor = 2*(area_sec_winding + area_sec_winding)/window_area;
 
 %%
-% winding geometry
-% here, perfect geometry is assumed with no insulation
+% Winding geometry
+%%
+% Perfect geometry is assumed with no insulation
 primary_layer = 1;
 primary_one_turn = conductor_diameter*ceil(sqrt(strand_primary))*sqrt(2); % mm
 primary_length1 = primary_one_turn*Npri/primary_layer; % mm
@@ -586,10 +584,13 @@ secondary_layer = 4;
 secondary_one_turn = conductor_diameter*ceil(sqrt(strand_secondary))*sqrt(2); % mm
 secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
 secondary_length2 = secondary_one_turn*secondary_layer; % mm
-% core window dimensions:
+%%
+% Core window dimensions:
 core_length1 = 94; % mm
 core_length2 = 22; % mm
 total_length1 = secondary_length1+primary_length1;
+%%
+% Evaluation of the Design
 if total_length1 < 0.9*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
     fprintf('Design is OK\n');
 else
