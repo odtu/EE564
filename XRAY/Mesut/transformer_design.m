@@ -1,14 +1,46 @@
 %% EE564 - Design of Electrical Machines
 %% Project-1: Transformer Design for X-Rays
 %%
-% Mesut Uður
+% Name: Mesut Uður
 % ID: 1626753
+%% INTRODUCTION
+% In this project, we are asked to design a high frequency, high voltage
+% transformer for an X-Ray generator. It is commonly used by radiographers
+% to acquire an x-ray image of the inside of an object (as in medicine or
+% non-destructive testing) but they are also used in sterilization or
+% fluorescence [1]. An x-ray generator is composed of a main circuit and
+% a filament circuit [2,3]. The main circuit is responsible for supplying poer to
+% the x-ray tube.
+%%
+% For the ionisation in the x-ray tube, high voltage is
+% required. The voltage boost operation is achieved via a high frequency
+% transformer (along with a DC/AC converter in the front and an AC/DC
+% converter at the end). A high frequency transformer is preferred to
+% reduce the size. In this project, design of a high frequency (100 kHz)
+% transformer for a 30 kW X-ray generator is achieved.
 
 %%
-% Specifications
+% This report is composed of the following sections:
 
-%%
-% X-ray transformer
+%% This report is composed of the following sections:
+%
+% # Project specifications are given
+% # Core type and material selection is done
+% # Conductor type is selected
+% # Operating conditions (flux density etc.) are selected
+% # For two sets of cores, basic design is achieved for comparison
+% # The core is selected and the design for the selected core is achieved
+% # The following results are obtained: Turn numbers, Transformer geometry
+% and fill factor, Corrected flux density, Losses and efficiency, Mass and
+% insulation, Temperature rise and cooling, Parasitic effects, Resultant
+% equivalent circuit, 
+% # The design is evaluated and the design work is concluded
+% # References are provided
+%
+
+%% SPECIFICATIONS
+% The x-ray generator transformer to be designed has the following
+% specifications:
 %%
 % Single-phase, high frequency, high voltage
 %%
@@ -21,38 +53,52 @@
 % Switching Frequency Minimum 100 kHz
 %%
 % Ambient Temperature 0-40 °C
+%% DESIGN INPUTS
 
+Vin_peak = 417; % volts
+Vpri_peak = Vin_peak*4/pi; % volts
+Vpri_rms = Vpri_peak/sqrt(2); % volts
+Vout_peak = 12500; % volts
+Vsec_peak = Vout_peak*4/pi; % volts
+Vsec_rms = Vsec_peak/sqrt(2); % volts
+Pout = 30000;  % watts
+Ipri_rms = Pout/Vpri_rms; % amps
+Isec_rms = Pout/Vsec_rms; % amps
+
+%% CORE TYE AND MATERIAL SELECTION
+% Usually, there are two types of transformers: Core type and Shell type.
+% In high frequency applications as the flux is divided in the outer limbs
+% so hat core loss is reduced. Commonly double E (or EE) type cores are
+% preferred. In this project, the first design is based on this type of
+% cores.
+%%
+% As the core material, ferrite core is a common choice for high frequency
+% applications, as they offer very low coercivity and hence hysteresis loss
+% (and core loss) is low. Moreover, they do not need a laminated structure
+% as their eddy current loss is relatively low.
+%%
+% For frequencies between 10 kHz and 3 MHz, manganeze-zinc ferrite cores
+% are suggested whereas for
+% frequencies between above 3 MHz, nickel-zinc ferrites are commonly used.
+% The disadvantage of using a ferrite core is basically low saturation flux
+% density (usually 500 mT max), however they offer a cheaper solution with
+% relatively low core losses. Another candidate for a high frequency
+% transformer is nanocrystalline core. They have high saturation flux
+% density (usually above 2 Tesla), low core loss (comparable to ferrite
+% cores). On the other hand, they are relatively expensive. Properties of
+% several cores are shown in the Figure below:
+
+I = imread('core_properties.png');
+figure;
+imshow(I);
+title('Types of cores and their properties','FontSize',18,'FontWeight','Bold');
 
 %%
-% Inputs
-
-Vin_peak = 417;
-Vpri_peak = Vin_peak*4/pi;
-Vpri_rms = Vpri_peak/sqrt(2);
-Vout_peak = 12500;
-Vsec_peak = Vout_peak*4/pi;
-Vsec_rms = Vsec_peak/sqrt(2);
-Pout = 30000;
-Ipri_rms = Pout/Vpri_rms;
-Isec_rms = Pout/Vsec_rms;
+% In this project, nickel-zinc ferrite core is selected from MAGNETICS with
+% EE geometry. U type cores are also included in the iterative core design
+% procedure.
 
 
-%% OBSOLETE
-% Area product calculation
-% c = 2.82e-3; % cm^2/Amps
-% efficiency = 0.98;
-% B = 0.5;
-% frequency = 100e3;
-% K = 0.7;
-% area_product = Pin*c*1e8/(4*efficiency*B*frequency*K)
-
-
-%%
-% Core material selection
-% FERRITE
-%%
-% Core shape selection
-% Double E
 %%
 % Core geometry selection
 % 49928
@@ -744,7 +790,6 @@ wire_area = (diameter_with_insulation/2)^2*pi; % mm^2
 area_pri_wire = Npri*strand_primary*wire_area; % mm^2
 area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
 fill_factor_corrected = (area_sec_wire + area_sec_wire)/window_area;
-
 
 % no insulated wire is used on primary
 % triple insulated wire is used for secondary
