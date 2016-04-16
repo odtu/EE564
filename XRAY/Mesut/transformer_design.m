@@ -734,27 +734,30 @@ figure;
 imshow(I);
 %% Fill Factor (Corrected)
 diameter_with_insulation = 0.632; % mm
-wire_area = (diameter_with_insulation/2)^2*pi; % mm^2
-area_pri_wire = Npri*strand_primary*wire_area; % mm^2
-area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
-fill_factor_corrected = (area_pri_wire + area_sec_wire)/window_area;
-
-%%
-% copper loss
+wire_area_pri = (conductor_diameter/2)^2*pi; % mm^2
+wire_area_sec = (diameter_with_insulation/2)^2*pi; % mm^2
+area_pri_wire = Npri*strand_primary*wire_area_pri; % mm^2
+area_sec_wire = Nsec*strand_secondary*wire_area_sec; % mm^2
+fill_factor_corrected = 2*(area_pri_wire + area_sec_wire)/window_area;
+fprintf('Corrected fill factor (with insulation) is %.2g\n',fill_factor_corrected);
+%% copper loss
 mean_length_turn_pri = pi*(primary_layer*primary_one_turn+sqrt(core_area))/10; % cm
+fprintf('Mean Length turn for Primary is %g cm\n',mean_length_turn_pri);
 length_pri = Npri*mean_length_turn_pri; % cm
 ohms_km_pri = ohms_per_km/strand_primary;
 resistance_pri = ohms_km_pri*length_pri/1000; % ohms
+fprintf('Primary winding resistance is %g Ohms\n',resistance_pri);
 mean_length_turn_sec = pi*(secondary_layer*secondary_one_turn+sqrt(core_area))/10; % cm
+fprintf('Mean Length turn for Secondary is %g cm\n',mean_length_turn_sec);
 length_sec = Nsec*mean_length_turn_sec; % cm
 ohms_km_sec = ohms_per_km/strand_secondary;
 resistance_sec = ohms_km_sec*length_sec/1000; % ohms
+fprintf('Secondary winding resistance is %g Ohms\n',resistance_sec);
 copper_loss_pri = Ipri_rms^2*resistance_pri; % Watts
 copper_loss_sec = Isec_rms^2*resistance_sec; % Watts
 copper_loss = copper_loss_pri+copper_loss_sec; % Watts
-
-%%
-% core loss
+fprintf('Total copper loss of the transformer is %g Watts\n',copper_loss);
+%% Core loss
 % Using curve fitting
 % P material @80 Cdegrees
 a = 0.0434;
@@ -770,14 +773,19 @@ for k = 1:total
     core_harmonic_loss(k) = PL_h*core_volume/1e6; % Watts
 end
 core_loss = sum(core_harmonic_loss(:)); % Watts
+fprintf('Total core loss of the transformer is %g Watts\n',core_loss);
+%% Total Loss
 total_loss = copper_loss + core_loss; % Watts
+fprintf('Total loss of the transformer is %g Watts\n',total_loss);
+%% Efficiency
 efficiency = 100*Pout/(total_loss+Pout); % percent
-
-
+fprintf('Rated efficieny of the transformer is %.2g %%\n',efficiency);
+%% Mass calculation
 %%
-% Mass calculation
-
+% Core density information is used for validation.
 core_mass = 980; % grams // from catalogue
+core_density = 4.8; % g/cm^3
+core_mass2 = core_volume*core_density; % grams
 copper_volume_pri = length_pri*strand_primary*conductor_area*1e-2; % cm^3
 copper_volume_sec = length_sec*strand_secondary*conductor_area*1e-2; % cm^3
 copper_density = 8.96; % g/cm^3
@@ -785,50 +793,96 @@ copper_mass_pri = copper_volume_pri*copper_density; % grams
 copper_mass_sec = copper_volume_sec*copper_density; % grams
 copper_mass = copper_mass_pri + copper_mass_sec; % grams
 total_mass = (core_mass+copper_mass)/1e3; % kg
-
-
+fprintf('Core mass is %g grams\n',core_mass);
+fprintf('Total copper mass is %g grams\n',copper_mass);
+fprintf('Total mass of the transformer is %.2g kg\n',total_mass);
+%% Temperature rise and Cooling
 %%
-% temperature rise and cooling
-% windings
+% It is known that the transformer is to be operated 100 miliseconds at
+% max. Although it is obvious that there will be no cooling problem, an
+% evaluation has been done for the temperate rise and cooling requirements.
+%%
+% Windings
 copper_specific_heat = 0.385; % J/g0C
-energy = (copper_loss_pri)*(1e-1);
+energy = (copper_loss_pri)*(1e-1); % Joules
 temp_rise_pri = energy/(copper_specific_heat*copper_mass_pri); % 0C
-energy = (copper_loss_sec)*(1e-1);
+energy = (copper_loss_sec)*(1e-1); % Joules
 temp_rise_sec = energy/(copper_specific_heat*copper_mass_sec); % 0C
-% core
-% TEMP RISE DATA IS NOT PROVIDED
-
-
+fprintf('Temperature rise for primary winding is %g C\n',temp_rise_pri);
+fprintf('Temperature rise for secondary winding is %g C\n',temp_rise_sec);
 %%
-% Equivalent circuit parameters
-
-% transformer base impedance
-Zbase = Vpri_rms^2/Pout; % Ohms
-
+% Core
+%%
+% Temperature rise data is not provided by Magnetics Inc.
+energy = (core_loss)*(1e-1); % Joules
+ferrite_specific_heat = 1.046; % J/g0C
+temp_rise_core = energy/(ferrite_specific_heat*core_mass); % 0C
+fprintf('Temperature rise for core is %g C\n',temp_rise_core);
+fprintf('No significant temperature rise, hence no requirement for cooling');
+%% Equivalent Circuit Parameters
+%%
+I = imread('trafo_esdeger.jpg');
+figure;
+imshow(I);
+title('Equivalent Circuit of a High Frequency Transformer');
+%%
+% On a classical (low frequency) transformer, the equivalent circuit
+% components are; primary and secondary winding resistances (R1, R2),
+% primary and secondary leakage inductances (L1, L2), core loss resistance
+% (Rc), magnetizing inductance (Lm) and an ideal transformer (N1:N2). For
+% high frequency operations, paracitic capacitances (C1, C2 and Cw) becomes
+% important components as shown in the Figure.
+%%
 turns_ratio = Npri/Nsec;
-% skin effect is eliminated so that the resistances are same as DC
+fprintf('Turns ratio of the transformer (N1:N2) is %g \n',turns_ratio);
+%%
+% Skin effect is eliminated so that the resistances are same as DC
 % resiatances
 R1 = resistance_pri; % Ohms
 R2 = resistance_sec; % Ohms
-R2ref = R2*turns_ratio^2; % Ohms 
+R2ref = R2*turns_ratio^2; % Ohms
+fprintf('Primary resiatance of the transformer (R1) is %g Ohms\n',R1);
+fprintf('Secondary resiatance of the transformer (R2) is %g Ohms\n',R2);
 Rc = Vpri_peak^2/core_loss; % Ohms
-
-% Magnetic field intensity calculation
-% relative permeability figure
-I = imread('permeability.png');
+fprintf('Core loss resiatance of the transformer (Rc) is %g Ohms\n',Rc);
+%%
+% To determine the magnetizing inductance, magnetic field intensity is
+% calculated first. The initial relative permeability of the core is 2500.
+% To determine the actual relative permeability, the data provided by the
+% catalogue is used as shown in the Figures below. At 100 kHz, the
+% permability is the same as initial permeability. The deviation due to
+% flux density and temperature is calculated by the figure shown below.
+I = imread('perm_vs_freq.png');
 figure;
 imshow(I);
-mur = 4000; % from the figure provided by magnetics
+title('Relative Permeability vs Frequency');
+I = imread('perm_vs_temp.png');
+figure;
+imshow(I);
+title('Relative Permeability vs Temperature');
+I = imread('perm_vs_B.png');
+figure;
+imshow(I);
+title('Relative Permeability vs Flux Density');
+mur = 4000;
 mu0 = 4*pi*1e-7;
-mu = mur*mu0;
-H = flux_density/mu; % Amperes
-
-% magnetizing inductance
-mmf_drop = H*core_length/1000;
+mu = mur*mu0; % H/m
+H = flux_density/mu; % A/m
+fprintf('Relative Permeability of the Core is %g \n',mur);
+fprintf('Permeability of the Core is %g H/m\n',mu);
+fprintf('Peak magnetic field intensity is %g A/m\n',H);
+%%
+% When the secondary is open circuted, all the MMF is used to magnetize the
+% core.
+mmf_drop = H*core_length/1000; % Amps
 magnetizing_current = mmf_drop/Npri; % Amps
 magnetizing_reactance = Vpri_rms/magnetizing_current; % Ohms
 Xm = magnetizing_reactance; % Ohms
 Lm = magnetizing_reactance/(2*pi*frequency); % Henry
+fprintf('Magnetizing current is %.2g Amps\n',magnetizing_current);
+fprintf('Magnetizing inductance of the transformer (Lm) is %g uH\n',Lm*1e6);
+
+%%
 
 % leakage inductance
 % MLT = mean_length_turn;
@@ -871,14 +925,6 @@ per_unit = (X1+X2ref)/Zbase;
 % 3. electrostatic coupling to other circuits
 
 
-%%
-% transformer drawing
-I = imread('trafo_cizim.jpg');
-figure;
-imshow(I);
 
-%%
-I = imread('trafo_esdeger.jpg');
-figure;
-imshow(I);
+
 
