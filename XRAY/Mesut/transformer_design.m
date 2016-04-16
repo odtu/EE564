@@ -173,7 +173,7 @@ strand_secondary = ceil(Isec_rms/current_rating);
 % Fill factor is calculated without considering the insulation of wires
 area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
 area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
-fill_factor = (area_sec_winding + area_sec_winding)./window_area;
+fill_factor = (area_pri_winding + area_sec_winding)./window_area;
 %% Windings Resistances
 % Mean length per turn is approximately calculated assuming the core is
 % square shaped as:
@@ -527,6 +527,17 @@ figure;
 imshow(I);
 title('Selected Core Geometry and Dimensions','FontSize',18,'FontWeight','Bold');
 %%
+% Core Dimensions (all in mm)
+dimA = 100.3;
+dimB = 59.4;
+dimC = 27.5;
+dimD = 46.85;
+dimE = 72;
+dimF = 27.5;
+dimL = 13.75;
+dimM = 22.65;
+
+%%
 % Selected Core Data
 AL = 6773; % nH/turn
 core_length = 274; % mm
@@ -534,10 +545,10 @@ core_area = 738; % mm^2
 core_volume = 202e3; % mm^3
 area_product = 90.6; % cm^4
 window_area = area_product*1e4/core_area; % mm^2
+fprintf('Window area is %g mm^2\n',window_area);
 
 %% DESIGN WITH THE SELECTED CORE
-%%
-% Inputs
+%% Inputs
 Vin_peak = 417; % volts
 Vpri_peak = Vin_peak*4/pi; % volts
 Vpri_rms = Vpri_peak/sqrt(2); % volts
@@ -547,55 +558,186 @@ Vsec_rms = Vsec_peak/sqrt(2); % volts
 Pout = 30000;  % watts
 Ipri_rms = Pout/Vpri_rms; % amps
 Isec_rms = Pout/Vsec_rms; % amps
-%%
-% Turn number calculation
+%% Turn number calculation
 flux_density = 0.3; % Tesla
 flux = flux_density*core_area/1e6; % Weber
+fprintf('The peak flux is %g Wb\n',flux);
 frequency = 100e3;
 Npri = round(Vpri_rms/(4.44*frequency*flux));
 Nsec = round(Vsec_rms/(4.44*frequency*flux));
-%%
-% Corrected flux density
-flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6);
-%%
+fprintf('Primary turn number is %g turns\n',Npri);
+fprintf('Secondary turn number is %g turns\n',Nsec);
+%% Corrected flux density
+flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6); % Tesla
+fprintf('Actual peak flux density is %g Tesla\n',flux_density);
+%% Skin Effect
+copper_resistivity = 1.7e-8; % Ohm*m
+copper_permeability = 1.256629e-6; % H/m
+angular_frequency = 2*pi*frequency; % rad/sec
+skin_depth = sqrt(copper_resistivity*2/(angular_frequency*copper_permeability));
+fprintf('Skin depth of Copper @ %g Hz is %g mm\n',frequency,skin_depth*1000);
+%% Conductor
 % Conductor properties
 % AWG#26
 conductor_diameter = 0.40386; % mm
 conductor_area = (conductor_diameter/2)^2*pi; % mm^2
 ohms_per_km = 133.8568; % ohm/km
 current_rating = 0.361; % Amps
+fprintf('Each conductor has the capability of %g Amps\n',current_rating);
 %%
-% Fill factor
+% The wire selection is based on the so-called AWG wire tables, and the
+% design is validated using skin depth calculation. As the skin depth is
+% larger than the conductor radius, no skin effect will be observed.
+%% Fill factor
 strand_primary = ceil(Ipri_rms/current_rating);
+fprintf('There should be %g strands at the primary turns to be able to supply %g amount of current\n',strand_primary,Ipri_rms);
 strand_secondary = ceil(Isec_rms/current_rating);
+fprintf('There should be %g strands at the secondary turns to be able to supply %g amount of current\n',strand_secondary,Isec_rms);
 area_pri_winding = Npri*strand_primary*conductor_area; % mm^2
 area_sec_winding = Nsec*strand_secondary*conductor_area; % mm^2
-fill_factor = 2*(area_sec_winding + area_sec_winding)/window_area;
-
+fill_factor = 2*(area_pri_winding + area_sec_winding)/window_area;
+fprintf('Resultant fill factor is %g \n',fill_factor);
+%% Winding geometry
 %%
-% Winding geometry
+% Wire insulation
+pri_vpt = Vin_peak/Npri;
+fprintf('Voltage difference between each turn at primary is %g \n',pri_vpt);
 %%
-% Perfect geometry is assumed with no insulation
+% Primary is 4 turns, 1 layer, therefore no extra insulation is required.
+%%
+% The length of the primary winding calculation
 primary_layer = 1;
 primary_one_turn = conductor_diameter*ceil(sqrt(strand_primary))*sqrt(2); % mm
+fprintf('Length of the one turn of the primary winding (crosssectional) is %g mm\n',primary_one_turn);
 primary_length1 = primary_one_turn*Npri/primary_layer; % mm
 primary_length2 = primary_one_turn*primary_layer; % mm
-secondary_layer = 4;
-secondary_one_turn = conductor_diameter*ceil(sqrt(strand_secondary))*sqrt(2); % mm
-secondary_length1 = secondary_one_turn*Nsec/secondary_layer; % mm
-secondary_length2 = secondary_one_turn*secondary_layer; % mm
+fprintf('Vertical length of primary winding is %g mm\n',primary_length1);
+fprintf('Horizontal length of primary winding is %g mm\n',primary_length2);
+%%
+% For the secondary (high voltage side), a more detailed design is
+% required. In this design, layer number candidates between 1 and 10 are
+% considered. Not only insulation, but also winding lengths will be
+% calculated for the selected core.
+%%
+% A triple insulated wire will be used with the same AWG size (#26) for
+% skin effect issues and with 7000V breakdown voltage. The diameter of one
+% strand of wire will increase.
+sec_vpt = Vout_peak/Nsec;
+fprintf('Voltage difference between each turn at secondary is %g \n',sec_vpt);
+layer = 1:10;
+turn_per_layer = zeros(1,10);
+max_volt_diff = zeros(1,10);
+diameter_with_insulation = 0.632; % mm
+secondary_one_turn = diameter_with_insulation*ceil(sqrt(strand_secondary))*sqrt(2); % mm
+fprintf('Length of the one turn of the secondary winding (crosssectional) is %g mm\n',secondary_one_turn);
+secondary_length1 = zeros(1,10);
+secondary_length2 = zeros(1,10);
 %%
 % Core window dimensions:
-core_length1 = 94; % mm
-core_length2 = 22; % mm
-total_length1 = secondary_length1+primary_length1;
+core_length1 = 2*dimD; % mm
+fprintf('Vertical length of core is %g mm\n',core_length1);
+core_length2 = dimM; % mm
+fprintf('Horizontal length of core is %g mm\n',core_length2);
 %%
-% Evaluation of the Design
-if total_length1 < 0.9*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
-    fprintf('Design is OK\n');
-else
-    fprintf('Design is FAIL\n');
+% Iteration of secondary layer number. This design is based on the:
+%%
+% 1. Is maximum voltage difference between turns lower than the isolation
+% breakdown voltage?
+%%
+% 2. Is the horizontal length of the core window enough for primary and
+% secondary windings?
+%%
+% 2. Is the vertical length of the core window enough for primary and
+% secondary windings?
+total_length1 = zeros(1,10);
+max_length2 = zeros(1,10);
+core_length1 = core_length1*ones(1,10);
+core_length2 = core_length2*ones(1,10);
+design_evaluation = zeros(1,10);
+for l = 1:10
+    turn_per_layer(l) = ceil(Nsec/layer(l));
+    max_volt_diff(l) = 2*turn_per_layer(l)*sec_vpt;
+    secondary_length1(l) = secondary_one_turn*round(Nsec/layer(l)); % mm
+    secondary_length2(l) = secondary_one_turn*layer(l); % mm
+    total_length1(l) = secondary_length1(l)+primary_length1;
+    max_length2(l) = max(secondary_length2(l),primary_length2);
+    if total_length1(1) < core_length1(l) && max_length2(l) < core_length2(l) && max_volt_diff(l) < 7000
+        design_evaluation(l) = 1;
+    end
 end
+%%
+% According to the design evaluation, 6, 7 and 8 layers are usable.
+
+%%
+breakdown_voltage = 7*ones(1,10); % kV
+figure;
+plot(layer,max_volt_diff/1000,'b- ','Linewidth',1.5);
+hold on;
+plot(layer,breakdown_voltage,'r- ','Linewidth',1.5);
+grid on;
+set(gca,'FontSize',12);
+title('Maximum Voltage Difference vs Secondary Layer','FontSize',12,'FontWeight','Bold');
+xlabel('Secondary Layer');
+legend('Maximum Voltage Difference (kV)','Breakdown Voltage (kV)');
+
+%%
+figure;
+plot(layer,secondary_length1,'b- ','Linewidth',1.5);
+hold on;
+plot(layer,total_length1,'r- ','Linewidth',1.5);
+hold on;
+plot(layer,core_length1,'k- ','Linewidth',1.5);
+hold off;
+grid on;
+set(gca,'FontSize',12);
+title('Vertical Lengths vs Secondary Layer');
+xlabel('Secondary Layer');
+legend('Secondary Vertical Length (mm)','Total Vertical Length (mm)','Core Vertical Length (mm)');
+
+%%
+figure;
+plot(layer,secondary_length2,'b- ','Linewidth',1.5);
+hold on;
+plot(layer,max_length2,'r- ','Linewidth',1.5);
+hold on;
+plot(layer,core_length2,'k- ','Linewidth',1.5);
+hold off;
+grid on;
+set(gca,'FontSize',12);
+title('Vertical Lengths vs Secondary Layer');
+xlabel('Secondary Layer');
+legend('Secondary Horizontal Length (mm)','Maximum Horizontal Length (mm)','Core Horizontal Length (mm)');
+%% Geometry Decision
+%%
+% When considering leakage flux minimization, the vertical length of the
+% coils should be maximized whereas the horizontal length of the coils
+% should be minimized. It has already been established that the primary
+% should be single layer. For the secondary, the selectable layer numbers
+% are 6, 7 and 8 minimum of which (6 layers) is selected.
+secondary_layer = 6;
+clear secondary_length1;
+clear secondary_length2;
+clear total_length1;
+clear max_length2;
+secondary_length1 = secondary_one_turn*round(Nsec/secondary_layer); % mm
+secondary_length2 = secondary_one_turn*secondary_layer; % mm
+total_length1 = secondary_length1+primary_length1;
+max_length2 = max(secondary_length2,primary_length2);
+fprintf('Primary Layer number is %g\n',primary_layer);
+fprintf('Secondary Layer number is %g\n',secondary_layer);
+fprintf('Total vertical winding length is %g\n',total_length1);
+fprintf('Maximum horizontal winding length is %g\n',max_length2);
+%%
+% The drawing of the transformer geoometry is shown in the figure below:
+I = imread('trafo_cizim.jpg');
+figure;
+imshow(I);
+%% Fill Factor (Corrected)
+diameter_with_insulation = 0.632; % mm
+wire_area = (diameter_with_insulation/2)^2*pi; % mm^2
+area_pri_wire = Npri*strand_primary*wire_area; % mm^2
+area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
+fill_factor_corrected = (area_pri_wire + area_sec_wire)/window_area;
 
 %%
 % copper loss
@@ -643,46 +785,6 @@ copper_mass_pri = copper_volume_pri*copper_density; % grams
 copper_mass_sec = copper_volume_sec*copper_density; % grams
 copper_mass = copper_mass_pri + copper_mass_sec; % grams
 total_mass = (core_mass+copper_mass)/1e3; % kg
-
-%%
-% wire insulation
-pri_volts_per_turn = Vin_peak/Npri;
-% primary is 4 turns, 1 layer
-% no extra insulation is required
-sec_volts_per_turn = Vout_peak/Nsec;
-% secondary is 114 turns, 4 layer
-turns_per_layer = ceil(Nsec/secondary_layer);
-max_volt_dif = turns_per_layer*2*sec_volts_per_turn;
-% interlayer tape will be used for the insulation between each layer
-
-% triple insulated wire (AWG#26)
-% 707V for medical equipment
-diameter_with_insulation = 0.632; % mm
-
-wire_area = (diameter_with_insulation/2)^2*pi; % mm^2
-area_pri_wire = Npri*strand_primary*wire_area; % mm^2
-area_sec_wire = Nsec*strand_secondary*wire_area; % mm^2
-fill_factor_corrected = (area_sec_wire + area_sec_wire)/window_area;
-
-% no insulated wire is used on primary
-% triple insulated wire is used for secondary
-primary_layer = 1;
-primary_one_turn = conductor_diameter*ceil(sqrt(strand_primary))*sqrt(2); % mm
-primary_length1 = primary_one_turn*Npri/primary_layer; % mm
-primary_length2 = primary_one_turn*primary_layer; % mm
-secondary_layer = 6;
-secondary_one_turn = diameter_with_insulation*ceil(sqrt(strand_secondary))*sqrt(2); % mm
-secondary_length1 = secondary_one_turn*round(Nsec/secondary_layer); % mm
-secondary_length2 = secondary_one_turn*secondary_layer; % mm
-% core window dimensions:
-core_length1 = 94; % mm
-core_length2 = 22; % mm
-total_length1 = secondary_length1+primary_length1;
-if total_length1 < 0.91*core_length1 && primary_length2 < 0.9*core_length2 && secondary_length2 < 0.9*core_length2
-    fprintf('Design is OK\n');
-else
-    fprintf('Design is FAIL\n');
-end
 
 
 %%
