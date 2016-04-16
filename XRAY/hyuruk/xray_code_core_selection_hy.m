@@ -69,6 +69,7 @@ core_mass = 2*357*10^-3;    %[kg]
 le_dim = 2*184;             %[mm] effective length core
 Al = 5080;                  %[nH/1T^2]
 mu_r = 5000;                %[-]
+mu0 = 4 * pi() * 10^-7;     %[-]
 graph_core_loss_100deg = 350;   %[mW/cm^3]
 graph_core_loss_40deg = graph_core_loss_100deg * 2; %[mW/cm^3]
 price_core = 2*3.25;         % [$]
