@@ -63,6 +63,7 @@ F_dim = 19.8;
 M_dim = 19.65;
 radius_acoil = F_dim/2 + M_dim/2;   % [mm]
 Vol_core  = ((A_dim*2*B_dim*C_dim) - (2*2*D_dim*M_dim*C_dim)) * 10^-3;    %[cm^3]
+Vol_eff = 72.3; %[cm^3]
 Ac = 645 * 10^-2;           % [cm^2] Ae effective are for the choosen ferrite
 Wa = 2 * 2* D_dim*E_dim * 10^-2; % available core window area [cm^2]
 core_mass = 2*357*10^-3;    %[kg]
