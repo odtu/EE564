@@ -1,16 +1,16 @@
 %% EE564 - Design of Electrical Machines
 %% Project-1: Transformer Design for X-Rays
-%%
-% Name: Mesut Uður
-% ID: 1626753
+%% Name: Mesut Uður
+%% ID: 1626753
 %% INTRODUCTION
 % In this project, we are asked to design a high frequency, high voltage
-% transformer for an X-Ray generator. It is commonly used by radiographers
+% transformer for an X-Ray generator. X-ray devices are commonly used by
+% radiographers
 % to acquire an x-ray image of the inside of an object (as in medicine or
 % non-destructive testing) but they are also used in sterilization or
 % fluorescence [1]. An x-ray generator is composed of a main circuit and
-% a filament circuit [2,3]. The main circuit is responsible for supplying poer to
-% the x-ray tube.
+% a filament circuit [2,3]. The main circuit is responsible for supplying
+% power to the x-ray tube.
 %%
 % For the ionisation in the x-ray tube, high voltage is
 % required. The voltage boost operation is achieved via a high frequency
@@ -18,11 +18,8 @@
 % converter at the end). A high frequency transformer is preferred to
 % reduce the size. In this project, design of a high frequency (100 kHz)
 % transformer for a 30 kW X-ray generator is achieved.
-
-%%
+%% 
 % This report is composed of the following sections:
-
-%% This report is composed of the following sections:
 %
 % # Project specifications are given
 % # Core type and material selection is done
@@ -37,7 +34,7 @@
 % # References are provided
 %
 
-%% SPECIFICATIONS
+%% PROJECT SPECIFICATIONS
 % The x-ray generator transformer to be designed has the following
 % specifications:
 %%
@@ -66,7 +63,7 @@ Isec_rms = Pout/Vsec_rms; % amps
 %% CORE TYE AND MATERIAL SELECTION
 % Usually, there are two types of transformers: Core type and Shell type.
 % In high frequency applications as the flux is divided in the outer limbs
-% so hat core loss is reduced. Commonly double E (or EE) type cores are
+% so that core loss is reduced. Commonly double E (or EE) type cores are
 % preferred. In this project, the first design is based on this type of
 % cores.
 %%
@@ -131,7 +128,7 @@ title('Types of cores and their properties','FontSize',18,'FontWeight','Bold');
 % selected.
 %% Core Data-1
 % The first set of the cores is composed of E cores data of which are shown
-% below:
+% below [7]:
 elements = 17;
 core = 1:17;
 core_length = [76.7,98.4,97,67.1,97,145,77,88.9,124,123,107,110,147,149,137,184,274]; %mm
@@ -236,65 +233,73 @@ subplot(3,1,1);
 plot(core,Npri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Primary Turn Number','FontSize',10,'FontWeight','Bold');
+ylim([0 20]);
+set(gca,'YTick',0:4:20);
 subplot(3,1,2);
 plot(core,Nsec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Secondary Turn Number','FontSize',10,'FontWeight','Bold');
+ylim([0 600]);
+set(gca,'YTick',0:120:600);
 subplot(3,1,3);
 plot(core,fill_factor,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Fill Factor','FontSize',10,'FontWeight','Bold');
 ylim([0 1]);
+set(gca,'YTick',0:0.2:1);
 
 %% 
 % Primary resiatance, secondary resistance
+figure;
 subplot(2,1,1);
 plot(core,resistance_pri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Primary Resistance','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
+ylabel('Primary Resistance (Ohms)','FontSize',10,'FontWeight','Bold');
 subplot(2,1,2);
 plot(core,resistance_sec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Secondary Resistance','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
+ylabel('Secondary Resistance (Ohms)','FontSize',10,'FontWeight','Bold');
 
 %%
 % Copper loss, core loss
+figure;
 subplot(2,1,1);
 plot(core,copper_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Copper Loss (W)','FontSize',10,'FontWeight','Bold');
 subplot(2,1,2);
 plot(core,core_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Core Loss (W)','FontSize',10,'FontWeight','Bold');
 
 %%
 % Total loss, efficiency
+figure;
 subplot(2,1,1);
 plot(core,total_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Total Loss (W)','FontSize',10,'FontWeight','Bold');
 subplot(2,1,2);
 plot(core,100*efficiency,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
 
 %%
@@ -308,19 +313,26 @@ plot(core,total_loss,'b-o','Linewidth',1.5);
 hold off;
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Loss (W)','FontSize',10,'FontWeight','Bold');
 legend('Core Loss','Copper Loss','Total Loss');
 
 %% Observations From the Results of the 1st Core Set (EE)
-% bla bla bla
-% bla bla bla
-
+%%
+% First of all, a fill factor above 50% is not feasible since the
+% insulation of wires have not been considered yet. This requires
+% relatively low number of turns and wider core window. In other words, a
+% core with a larger area and window area at the same time. Among the
+% alternatives, 16th and 17th cores are suitable. In terms of efficiency,
+% the selected 98% limit is obtained for cores 9th to 17th among which 13th
+% and 14th has the best performance. However, efficiency is not as an
+% important constraint as fill factor as the transformer is to be operated
+% in short times, core number 17 is selected among the first set.
 
 clearvars -EXCEPT efficiency1
 %% Core Data-2
 % The second set of the cores is composed of I cores data of which
-% are shown below:
+% are shown below [7]:
 elements = 14;
 core = 1:elements;
 core_length = [29.2,24.6,95.8,68.9,83.4,64.3,83.4,353,257,354,353,480,308,245]; %mm
@@ -412,65 +424,79 @@ subplot(3,1,1);
 plot(core,Npri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Primary Turn Number','FontSize',10,'FontWeight','Bold');
+ylim([0 20]);
+set(gca,'YTick',0:4:20);
 subplot(3,1,2);
 plot(core,Nsec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Secondary Turn Number','FontSize',10,'FontWeight','Bold');
+ylim([0 600]);
+set(gca,'YTick',0:120:600);
 subplot(3,1,3);
 plot(core,fill_factor,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Fill Factor','FontSize',10,'FontWeight','Bold');
 ylim([0 1]);
+set(gca,'YTick',0:0.2:1);
 
 %% 
 % Primary resiatance, secondary resistance
+figure;
 subplot(2,1,1);
 plot(core,resistance_pri,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Primary Resistance','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
+ylabel('Primary Resistance (Ohms)','FontSize',10,'FontWeight','Bold');
 subplot(2,1,2);
 plot(core,resistance_sec,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
-ylabel('Secondary Resistance','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
+ylabel('Secondary Resistance (Ohms)','FontSize',10,'FontWeight','Bold');
+ylim([0 120]);
+set(gca,'YTick',0:20:120);
 
 %%
 % Copper loss, core loss
+figure;
 subplot(2,1,1);
 plot(core,copper_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Copper Loss (W)','FontSize',10,'FontWeight','Bold');
+ylim([0 1000]);
+set(gca,'YTick',0:200:1000);
 subplot(2,1,2);
 plot(core,core_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Core Loss (W)','FontSize',10,'FontWeight','Bold');
 
 %%
 % Total loss, efficiency
+figure;
 subplot(2,1,1);
 plot(core,total_loss,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Total Loss (W)','FontSize',10,'FontWeight','Bold');
+ylim([0 2000]);
+set(gca,'YTick',0:400:2000);
 subplot(2,1,2);
 plot(core,100*efficiency,'k- ','Linewidth',1.5);
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
 
 %%
@@ -484,14 +510,20 @@ plot(core,total_loss,'b-o','Linewidth',1.5);
 hold off;
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Loss (W)','FontSize',10,'FontWeight','Bold');
 legend('Core Loss','Copper Loss','Total Loss');
+ylim([0 2000]);
+set(gca,'YTick',0:400:2000);
 
 %% Observations From the Results of the 1st Core Set (EE)
-% bla bla bla
-% bla bla bla
-
+%%
+% In terms of fill factor, cores from 8th to 14th are suitable. This was
+% expected since this core set is composed of U shaped cores. This gives a
+% variety of candidates. In terms of efficiency, cores from 8th to 14th has
+% copper and core losses close to each other which yields the highest
+% efficiency as expected. Among the alternatives, core 9 and core 14 are
+% the most suitable in terms of efficiency.
 
 %% Efficiency Comparison Between the Two Sets of Cores
 figure;
@@ -502,20 +534,26 @@ plot(core,100*efficiency2,'b-o','Linewidth',1.5);
 hold off;
 grid on;
 set(gca,'FontSize',12);
-xlabel('Core Area (mm^2)','FontSize',10,'FontWeight','Bold');
+xlabel('Core','FontSize',10,'FontWeight','Bold');
 ylabel('Efficiency (%)','FontSize',10,'FontWeight','Bold');
 ylim([90 100]);
 
 %% CORE SELECTION
-% Discusssion
-% Discusssion
-% Discusssion
-% Discusssion
-
+%%
+% The efficiency comparison and the fill factors suggest that, core number
+% 17th of the first set (EE cores) is suitable. In this selection, the
+% amount of copper to be used is also tried to be minimized. When EE cores
+% and U cores are compared, it is also observed that similar performance is
+% obtained with less amount of core material (core mass) with double E
+% cores. Transformer cost is therefore minimized in terms of both copper
+% and core.
 
 %% SELECTED CORE PROPERTIES
-% Ee Ferrite core from magnetics
+%%
+% EE Ferrite core from magnetics
+%%
 % 49928E-C
+%%
 % material: P-type ferrite
 clear all;
 I = imread('selected_core.png');
@@ -570,7 +608,7 @@ fprintf('Secondary turn number is %g turns\n',Nsec);
 %% Corrected flux density
 flux_density = Vpri_rms/(4.44*Npri*frequency*core_area/1e6); % Tesla
 fprintf('Actual peak flux density is %g Tesla\n',flux_density);
-%% Skin Effect
+%% Skin Effect [11]
 copper_resistivity = 1.7e-8; % Ohm*m
 copper_permeability = 1.256629e-6; % H/m
 angular_frequency = 2*pi*frequency; % rad/sec
@@ -621,7 +659,7 @@ fprintf('Horizontal length of primary winding is %g mm\n',primary_length2);
 %%
 % A triple insulated wire will be used with the same AWG size (#26) for
 % skin effect issues and with 7000V breakdown voltage. The diameter of one
-% strand of wire will increase.
+% strand of wire will increase [12].
 sec_vpt = Vout_peak/Nsec;
 fprintf('Voltage difference between each turn at secondary is %g \n',sec_vpt);
 layer = 1:10;
@@ -711,7 +749,7 @@ legend('Secondary Horizontal Length (mm)','Maximum Horizontal Length (mm)','Core
 %%
 % When considering leakage flux minimization, the vertical length of the
 % coils should be maximized whereas the horizontal length of the coils
-% should be minimized. It has already been established that the primary
+% should be minimized [13]. It has already been established that the primary
 % should be single layer. For the secondary, the selectable layer numbers
 % are 6, 7 and 8 minimum of which (6 layers) is selected.
 secondary_layer = 6;
@@ -813,7 +851,9 @@ fprintf('Temperature rise for secondary winding is %g C\n',temp_rise_sec);
 %%
 % Core
 %%
-% Temperature rise data is not provided by Magnetics Inc.
+% Temperature rise data is not provided by Magnetics Inc. The calculation
+% is based on specific heat of ferrite material [14].
+
 energy = (core_loss)*(1e-1); % Joules
 ferrite_specific_heat = 1.046; % J/g0C
 temp_rise_core = energy/(ferrite_specific_heat*core_mass); % 0C
@@ -879,52 +919,149 @@ magnetizing_current = mmf_drop/Npri; % Amps
 magnetizing_reactance = Vpri_rms/magnetizing_current; % Ohms
 Xm = magnetizing_reactance; % Ohms
 Lm = magnetizing_reactance/(2*pi*frequency); % Henry
-fprintf('Magnetizing current is %g Amps\n',magnetizing_current);
-fprintf('Magnetizing inductanceof the transformer (Rc) is %g Ohms\n',Rc);
-
-
-
-% leakage inductance
-% MLT = mean_length_turn;
-% L1 = (1e-9*4*pi*MLT*Npri^2)*...
-%     (primary_length2+secondary_length2)/...
-%     (2*4.7); % Henries
-% X1 = L1*2*pi*frequency; % Ohms
-% 
-% L2 = (1e-9*4*pi*MLT*Nsec^2)*...
-%     (primary_length2+secondary_length2)/...
-%     (2*4.7); % Henries
-% X2 = L2*2*pi*frequency; % Ohms
-% X2ref = X2*turns_ratio^2;
-
-% MLT = mean_length_turn_pri;
-% L1 = (4*pi*1e-7*MLT*Npri^2)*1e-3*...
-%     (primary_length1+secondary_length1)/...
-%     (primary_length2/10); % Henries
-% X1 = L1*2*pi*frequency; % Ohms
-
-% leakage inductance
+fprintf('Magnetizing current is %.2g Amps\n',magnetizing_current);
+fprintf('Magnetizing inductance of the transformer (Lm) is %g uH\n',Lm*1e6);
+%%
+% The leakage inductance is highly dependent to the winding geometry and
+% the core window. The winding configuration has already been shown in the
+% figure above.
+%%
+% Minimization of leakage inductance is critical for high frequency pulse
+% transformers as reactance is much higher compared to classical
+% transformers which will cause more volotage drop and poor voltage
+% regulation performance. Another disadvantage is the voltage spikes due
+% to switching at high frequencies. The leakage flux on a EE core can be
+% seen in Figure. [15-17]
+I = imread('leakage.png');
+figure;
+imshow(I);
+title('Leakage Flux on a EE Core','FontSize',12,'FontWeight','Bold');
+%%
+% To minimize the leakage inductance, for a double E configuration, the
+% winding vertical length should be maximized whereas horizontal length
+% should be minimized. This is the reason why the minimum number of
+% secondary layers possible has been selected.
+%%
+% The calculation of the leakage inductance for this design is shown in
+% the Figure. The sectionalized transformer configuration is used to
+% decrease the leakage inductance. [15]
+I = imread('leakage3.png');
+figure;
+imshow(I);
+title('Leakage Inductance Calculation on a EE Core','FontSize',12,'FontWeight','Bold');
+%%
+% According to this, the leakage inductance is calculated as follows:
 MLT = mean_length_turn_pri; % cm
-L1 = (pi*1e-9*MLT*Npri^2)*...
-    (primary_length1+secondary_length1)/...
-    (primary_length2); % Henries
-X1 = L1*2*pi*frequency; % Ohms
-L2 = (pi*1e-9*MLT*Nsec^2)*...
-    (primary_length1+secondary_length1)/...
+L1 = (pi*1e-9*MLT*Npri^2)*((primary_length1+secondary_length1)/3)/...
     (secondary_length2); % Henries
-X2 = L2*2*pi*frequency; % Ohms
-X2ref = X2*turns_ratio^2; % Ohms
+MLT = mean_length_turn_sec; % cm
+L2 = (pi*1e-9*MLT*Nsec^2)*((primary_length1+secondary_length1)/3)/...
+    (secondary_length2); % Henries
+L2ref = L2*turns_ratio^2; % Ohms
+fprintf('Primary Leakage inductance (L1) is %guH\n',L1*1e6);
+fprintf('Secondary Leakage inductance (L2) is %guH\n',L2*1e6);
+fprintf('Primary Referred Secondary Leakage inductance (L2ref) is %guH\n',L2ref*1e6);
+%%
+% The parasitic capacitances should also be taken into account for high
+% frequency magnetics design, especially for square wave operation. At
+% normal frequency, these capacitive components which occur between
+% turns, windings, insulation etc. do not have that much of effect; however, as the
+% frequency increases, the impedance decreases and the leakage currents
+% start to emerge. One other effect of these capacitances are spikes on the
+% current with high frequency square wave operation. Premature resonance
+% and electrostatic coupling with other circuits are also some adverse
+% effects. there are some methods which are based on some tests and
+% empirical formulas to determine the leakage capacitances [16]. In the scope
+% of this work, equivalent capacitance calculation is not included.
+%%
+% Another important effect for wire selection, proximity effect should also
+% be considered for high frequency transformer design. Proximity effect can
+% be defined as the emergence of eddy currents on nearby conductors when
+% severals strans of conductors (as in this design) carry the same current
+% at high frequencies resulting in an increase on the wire resistances. It
+% can be eliminated by conductor bundling as the direction of magnetic
+% fields is reversed throughout the winding and the net effect is near
+% zero. Litz wires can be used to deal with the proximity effect as shown
+% in the Figure.
+I = imread('litz-wire-img.jpg');
+figure;
+imshow(I);
+title('Litz Wire to Eliminate the Proximity Effect','FontSize',12,'FontWeight','Bold');
 
-per_unit = (X1+X2ref)/Zbase;
+%% CONCLUSIONS
+%%
+% In this project, a high frequency, high voltage transformer is designed
+% for an X-ray generator application. High frequency transformers in power
+% electronics converters offer a significant reduction on the size of the
+% converter; on the other hand, they need more attention than the classical
+% low frequency transformers as parasitic effects start to emerge, core
+% losses (both eddy current and hysteresis) start to increase, copper
+% losses tend to increase due to skin and proximity effects, parasitic
+% (leakage) inductances and capacitances become more crucial.
+%%
+% Core materials such as ferrites, amorphous and nanocrystalline have been
+% suggested and used in high frequency magnetics designs. In this roject,
+% ferrite core is selected for its relatively low core losses and low cost
+% although they have a smaller saturation flux density.
+%% 
+% A design procedure
+% is suggested in which, by using the design specifications and selected
+% core data, required number of turns on both sides, resultant fill factor,
+% winding resiatances, copper, core and total losses and efficiency are
+% determined. This design procedure is applied to two different sets of
+% cores (one with EE type and one with U type) and they are compared in
+% terms of several constraints. To eliminate the skin effect, AWG#26 wire
+% is selected to be used with several strands in parallel to carry the
+% rated currents of the transformer.  
+%%
+% After the selection of the core material, type, dimensions etc which
+% belongs to the Magnetics Inc., the actual design is achieved with the
+% calculation of finalised parameters listed above. For the high voltage
+% side which has a high number of turns, an iterative deisgn to determine
+% the most suitable number of layers which turned out to be 6. A winding
+% geometry is proposed to minimize the leakage inductances.
+%%
+% Finally, equivalent circuit parameters of the designed transformer are
+% calculated including resistances representing copper losses and core
+% loss, leakage inductances on
 
 
-% winding capacitances
-% adverse effects are:
-% 1. premature resonance
-% 2. large primary current spikes (square wave)
-% 3. electrostatic coupling to other circuits
-
-
-
-
+%% REFERENCES
+% 1. https://en.wikipedia.org/wiki/X-ray_generator
+%%
+% 2. http://www.slideshare.net/muffafa/2-components-of-xray-machine
+%%
+% 3. https://xraykamarul.files.wordpress.com/2011/11/lecture10.pdf
+%%
+% 4. http://www.mag-inc.com/core-conversations/core-conversations/2010/03/selecting-a-transformer-core
+%%
+% 5. O. A. Hassan, C. Klumpner and G. Asher, "Design considerations for core
+% material selection and operating modes for a high frequency transformer
+% used in an isolated DC/DC converter," Power Electronics and Applications
+% (EPE 2011), Proceedings of the 2011-14th European Conference on,
+% Birmingham, 2011, pp. 1-11.
+%%
+% 6. http://www.magnetec.de/fileadmin/pdf/np_powerelectronic_e.pdf
+%%
+% 7. https://www.mag-inc.com
+%%
+% 8. Power Design: Core Selection, Magnetics Inc.
+%%
+% 9. http://www.powerstream.com/Wire_Size.htm
+%%
+% 10. Curve Fit Equations for Ferrite Materials, Magnetics Inc.
+%%
+% 11. Colonel Wm. T. McLyman, “Transformer and Inductor Design Handbook”, 3rd edition
+%%
+% 12. http://www.rubadue.com/product/reinforced-3-layers-tca3-triple-insulated-wire
+%%
+% 13. Mohammadamin Bahmani, “Design and Optimization of HF Transformers for High Power DC-DC Applications”, Chalmer University of Technology, 2014 Sweden
+%%
+% 14. George Orenchak, Ferrites – “The Most Important Properties”, 1994 Soft Ferrite Users Conference
+%%
+% 15. B. Cougo and J. W. Kolar, "Integration of Leakage Inductance in Tape Wound Core Transformers for Dual Active Bridge Converters," 2012 7th International Conference on Integrated Power Electronics Systems (CIPS), Nuremberg, 2012, pp. 1-6.
+%%
+% 16. R. Doebbelin, C. Teichert, M. Benecke, and A. Lindemann, “Computerized Calculation of Leakage Inductance Values of Transformers”, PIERS ONLINE, VOL. 5, NO. 8, 2009
+%%
+% 17. H. B. Ertan, K. Leblebicioðlu, O. Demirel, “An Approach to Design and Optimization of HV High Frequency Resonant Power Transformers”, ICEM 2000
 
