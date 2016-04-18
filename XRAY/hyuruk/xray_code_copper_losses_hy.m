@@ -1,7 +1,8 @@
 % copper losses will be calculated
 % length of one turn coil will be calculated as follow
 % primary and secondary window area assumed equal
-% radius of the coil, radius_acoil = C/2 + D/2; [mm]
+% radius of the coil, radius_acoil = F/2 + M/2; [mm]
+% note that it is the midpoint of the window area
 % length of the coil, length_acoil = 2 * pi * radius_acoil
 % where C, D see dimensions
 % total coil length:

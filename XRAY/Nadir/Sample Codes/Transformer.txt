@@ -1,0 +1,211 @@
+ 
+Q=input('enter the value of kVA rating');%in our case-125kVA;
+ 
+f=input('enter nominal frequency');%may be use to design pulse transformer
+ 
+V1=11;%primary voltage in kV
+ 
+k=0.45; %for 3 phase core type distribution transformer
+ 
+Et=k*sqrt(Q);
+ 
+phim=Et/(4.44*f);
+ 
+Bm=input('enter the value of magnetic flux density');
+ 
+Ai=1e6*phim/Bm;%net iron area in mm2
+ 
+d=sqrt(Ai/0.6); %diametr of circumscribing circle{Ai=0.6*d^2(for 3 stepped)}
+ 
+a=0.9*d;%width of largest stamping
+ 
+kw=10/(30+V1);%window space factor for rating 50-200 kVA
+ 
+cd=input('enter the value of current density (A/mm2)');
+ 
+Aw=Q*1e6/(3.33*f*Bm*kw*cd*1e6*Ai*1e-6*0.001); %Q=3.33*f*Bm*kw*cd*Aw*Ai*0.001 Aw=window area in mm2
+ 
+k1=input('enter the ratio of window height to window width i.e. Hw/Ww');%vary from 2-4 Ww=round((Aw/k1)^0.5); %Aw=Hw*Ww=ki*Ww^2 width of window in mm
+ 
+Hw=round(k1*Ww)%height of window in mm
+ 
+Dis=Ww+d%distance b/w adjacent limbs
+ 
+Ay=1.2*Ai%area of yoke{taken larger than limb so that flux is reduced in yoke}
+ 
+Agy=Ay/0.9%stacking factor=0.9
+ 
+Dy=a%taking yoke as rectangular
+ 
+Hy=Agy/Dy%height of yoke
+ 
+H=Hw+2*Hy %overall height
+ 
+W=2*Dis+a%overall width
+ 
+V2=400 %secondary line voltage
+ 
+V2ph=V2/sqrt(3) %secondary per phase voltage
+ 
+Ts=V2ph/Et %turns per phase
+ 
+I2=Q*1000/(3*V2ph) %secondary phase current
+ 
+a2=I2/cd %area of secondary conductor in mm2
+ 
+%standard area=79.1mm2 size of wire are 20*4mm and 25*3.2mm and the thickness of
+ 
+%insulation is taken as 1mm. %If we take Hw/Ww=3, then
+ 
+% If we use 20*4mm strip it doesn't effectively fit in the window using two
+ 
+% layer helical winding, that's why we use 25*3.2mm strip and three layer % winding %If we take Hw/Ww=4, then
+ 
+% we get clearance on each side = 2mm, but the minimum clearance
+ 
+% required is 6mm, that's why we are not using the Hw/Ww=4 with 2-layer winding cdn=I2/79.1 % new current density acc. to standard size.
+ 
+Ns=V2/(1.731*Et) %no. of turns per phase on secondary winding
+ 
+Nsl=round((Ns/3)+1) %no. of turns per phase per layer in secondary winding thcs=Nsl*25.1 %total height of conductor in one layer of secondary
+ 
+clrs=(Hw-thcs)/2 %clearance on each side of the layer
+ 
+%clearance is within standard limits
+ 
+%pressboard of 0.5mm is used between three layers and of 1.5mm between core
+ 
+%and first layer thus total width of the winding is
+ 
+IDs=d+(2*1.5)
+ 
+ 
+rds=(3*3.3)+(2*0.5)% radial depth
+ 
+ODs=2*((3*3.3)+(2*0.5)+1.5)+d % outer diameter of secondary winding in window
+ 
+%design of high voltage winding
+ 
+Tp=V1*1000/Et % primary turns per phase
+ 
+Tp5=1.05*Tp; %for +-5% tappings
+ 
+% We are employing total of 8 coils of primary winding and each coil has 24 layers
+ 
+Tpc=round(Tp5/8) %turns per coil
+ 
+Tpl=Tpc/24 % turns per layer
+ 
+maximum_voltage_btw_layers=2*Tpl*Et
+ 
+%maximum_voltage_btw_layers is below the allowable limit
+ 
+I1=Q*1000/(3000*V1) %primary current per phase
+ 
+cdp=2.5 % current density on primary side is larger due to better cooling
+ 
+a1=I1/cdp %
+ 
+Dc=sqrt(4*a1/3.14) % diameter of bare conductor
+ 
+%we are using paper covered conductors for high voltage winding
+ 
+% so for given diameter the standard value of diameter of 1.4mm with fine
+ 
+% covering is 1.575mm
+ 
+a1n=3.14*(1.4^2)/4 % modified area cdpn=I1/a1n % new current density
+ 
+% 10mm space is employed betweeen adjacent coils so
+ 
+thcp=Tpl*8*1.575+8*10 %total height of conductor in one layer of primary
+ 
+clrp=(Hw-thcp)/2 % clearance. This is used by insulation and bracing
+ 
+% Radial insulation is done with paper of 0.3 mm thick
+ 
+thl= 10 % thickness_of_insulation_between_HV_and_LV_winding in mm
+ 
+IDp=round(ODs+2*thl)
+ 
+rdp=24*1.575+23*0.3 % radial depth of coil
+ 
+ODp=round(ODs+2*thl+2*(24*1.575+23*0.3)) % outer diameter of primary
+ 
+clearance_bw_adjacent_HVwindings=Dis-ODp
+ 
+% RESISTANCE MEASUREMENT
+ 
+mdp=(ODp+IDp)/2 % mean diameter
+ 
+lmtp=3.14*mdp/1000 % length of mean turn of primary winding in meters
+ 
+Rp=Tp*0.021*lmtp/a1n %resistance at 75"C
+ 
+mds=(ODs+IDs)/2
+ 
+lmts=3.14*mds/1000
+ 
+Rs=Ts*.021*lmts/a2
+ 
+R=Rp+Rs*(Tp/Ts)^2 % total R referred to primary
+ 
+Rpu=I1*R/(V1*1000)
+ 
+%LEAKAGE REACTANCE
+ 
+mdw=(ODp+IDs)/2 % mean diameter of winding
+ 
+lmtw=3.14*mdw/1000 %length of mean turn of winding
+ 
+hw=(thcs+thcp)/2 %height of winding
+ 
+ 
+X=2*3.14*f*4*3.14*1e-7*(Tp^2)*(lmtw/hw)*(thl+(rdp+rds)/3)*1e-3 % referred to primary
+ 
+Xpu=I1*X/(V1*1000)
+ 
+Zpu=sqrt((Rpu^2)+(Xpu^2))
+ 
+%REGULATION
+ 
+puRu=Rpu %per unit regulation at unity pf
+ 
+puRl=Rpu*0.8+Xpu*0.6 % per unit regulation at lagging pf
+ 
+%LOSSES
+ 
+ohmloss=3*(I1^2)*R
+ 
+%taking stray losses to be 15% of ohmic losses
+ 
+TOL=1.15*ohmloss % total ohmic loss
+ 
+%density of laminations=7.6*1e3 kg/m3
+ 
+Wtl=3*Ai*Ww*1e-9*7.6*1e3 % weight of limbs
+ 
+% Bm in limbs=1.3Wb/m2 so specific core loss=2 W/kg
+ 
+corelossl=2*Wtl % core loss in limbs
+ 
+Wty=2*W*Ay*1e-9*7.6*1e3
+ 
+% Bm in yoke=1.1Wb/m2 so specific core loss=1.2 W/kg
+ 
+corelossy=1.2*Wty
+ 
+TCL=corelossl+corelossy %total core loss
+ 
+%EFFICIENCY
+ 
+TLfl=TOL+TCL % total loss at full load
+ 
+eff=(Q*1000)/(Q*1000+TLfl) % efficiency at unity pf and full load
+ 
+%for max efficiency
+ 
+max_eff_occurs_at_this_load=sqrt(TCL/TOL)*100
+
+OUTPUT
+enter the value of kVA rating125 enter nominal frequency50 enter the value of magnetic flux density1.3 enter the value of current density (A/mm2)2.3 enter the ratio of window height to window width i.e. Hw/Ww3
