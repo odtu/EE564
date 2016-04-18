@@ -18,3 +18,21 @@ The eddy current brake has the following specs:
 
 You don't have to, but I strongly advise you to use a FEA software (some options are listed above) for this project.
 
+**Programmes Currently Using**
+GitHub
+Atom
+&& yeni programlar gelecek
+
+**Eddy Current Brake Explanation**
+Just like friction brakes, Eddy Current Brakes also convert kinetic energy to heat. However, here drag force is electromagnetic force instead of friction.
+
+Eddy current flows in a closed circular loop and this loop is perpendicular to the magnetic field. When the magnetic flux changes on the conductor, a current which creates a magnetic flux aiming to diminish the effect of first magnetic flux is formed.
+
+Eddy Current's Magnitude depends on:
+1) Magnitude of Magnetic field (proportional)
+2) Area of the eddy current's circle (proportional)
+3) Instantaneous change of magnetic flux in the circle (proportional)
+4) Inner resistance of the conductor (inversely proportional)
+
+**Formulas**
+Magnetic Flux = Phi (Weber) = B (Tesla) * A (m^2) * cosa
