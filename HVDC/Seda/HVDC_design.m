@@ -10,6 +10,7 @@ Vs=300000; % V
 turn_ratio=Vp/Vs;
 lamination_factor=0.94;
 winding_factor=0.25;
+kw=0.94; % core stacking factor
 %%  Choose Initial Material
 % For the core material 0.23 mm M3 C type is choosen since losses should be low  when we consider high
 % frequency , other material losses are very high.
@@ -28,8 +29,8 @@ Np=20; %primary turn number
 Ns=Np*100*105/100; %secondary turn number we cross 0.05 because of the voltage drop
 
 %% Calculation of Thickness of Core Leg 
+
 % Vp=E=4.44*f*N*kw*B*Acore  and E=Vt*N so:
-kw=0.94; % core stacking factor
 Ac=Vp/(4.44*f*Np*kw*B); %m^2
 % Acore=2*D(width of core leg)*Eu(thickness of the core leg)
 D=0.1; %m^2
@@ -38,8 +39,12 @@ Eu=Ac/(2*D);
 % The factor 1/2 appears because the assembling of every winding of shell type transformer require two cores
 
 core_shape = imread('shell_type_transformer.png');
+core_dimension = imread('transformer_dimension.png');
 figure;
-imshow(core_shape);
+subplot(1, 2, 1),
+imshow(core_shape)
+subplot(1, 2, 2),
+imshow(core_dimension);
 
 %% Wire Selection
 J=3; % current density
@@ -47,6 +52,7 @@ Ap=Ip/J; %mm^2   primary conductor area
 As=Is/J; %mm^2    secondary conductor area
 
 %% Skin depth calculation
+
 q=1.68*10^-8; % resistivity of the copper for 20C
 Tc=0.0386; % temperature coefficient
 skin_dept=sqrt((2*q)/(u*w))*1000;
@@ -62,7 +68,7 @@ copper_window_primary=copper_area_p*paralel_branch*Np;  %mm^2
 % awg#8 is enough for secondary side of the transformer
 copper_area_s=8.37;
 copper_window_secondary=copper_area_s*Ns;  %mm^2
-diameter_secondary_winding=sqrt(As*4/pi)
+diameter_secondary_winding=sqrt(As*4/pi);
 
 %% Window area
 % For the window area it is considere primar and seconder winding distance for the insulation so there is a constant like fill factor=0.25
@@ -79,30 +85,43 @@ winding_pitch_primary=G+[(Eu*1000)*(copper_window_primary/window_area)];
 winding_pitch_secondary=G+[(Eu*1000)*(copper_window_secondary/window_area)];
 
 %% Resistance of the primary and secondary conductors
-L_primary=pi*winding_pitch_primary*Np
+L_primary=pi*winding_pitch_primary*Np %mm
 R_p=0.6;
 R1=[(R_p*L_primary)/1000]/paralel_branch; %mohm
+R1_70=R1*(1+0.003862*(70-20));
 
-
-L_secondary=pi*winding_pitch_secondary*Ns
+L_secondary=pi*winding_pitch_secondary*Ns;
 R_s=2.061;
-R2=(R_s*L_secondary)/1000 %mohm
+R2=(R_s*L_secondary)/1000; %mohm
+R2_70=R2*(1+0.003862*(70-20));
+
 
 %% Magnetizing and Leakage Inductance 
 
 % for this part we use B-H curve shown in figure1 to calculate permeability
 % (mu). From the datasheet for the B=1.2T match up to H=22 A/m mu=0.058
+% to obtain primary and secondary leakage reactance 0.06 pu assume  and
+% X1=X2p for primary side
+
 permeability=0.058;
 L=[2*(F2+G+2*Eu*1000)]/1000; %length
 reluctance=L/(permeability*Ac);
 Lm=Np^2/reluctance;  %H
 Xm=2*pi*f*Lm;
 
+Xes=0.06*Vp^2/S; %ohm
+X1=Xes/2;
+L1=X1/(2*pi*f); %H
+
+X2p=X1;
+X2=X2p/turn_ratio;
+L2=X2/(2*pi*f);  %H
+
 
 %% Core Mass
-core_volume=Ac*4*((F2/1000)+Eu) %m^3
+core_volume=Ac*4*((F2/1000)+Eu); %m^3
 
-Mc=core_volume*mass_density*1000 %kg
+Mc=core_volume*mass_density*1000; %kg
 
 
 %% Loss Calculation
@@ -112,27 +131,51 @@ Mc=core_volume*mass_density*1000 %kg
 % this value 'a' is found.
 
 % core loss:
-P_core_100=1.2  %W/kg
+P_core_100=1.2;  %W/kg
 
-P_core_200=3.4  %W/kg
+P_core_200=3.4;  %W/kg
 
 a=[log(P_core_100/P_core_200)]/[log(100/200)];
 
-P_core_500=((500/100)^a)*P_core_100 % W/kg
+P_core_500=((500/100)^a)*P_core_100; % W/kg
+
+core_loss=P_core_500*Mc;  %W
+
+Rc=Vp^2/core_loss;
+
+equivalent = imread('equivalent circuit.png');
+figure;
+imshow(equivalent);
 
 % copper loss:
 
-copper_loss_p=R1*Ip^2/1000
-copper_loss_s=R2*Is^2/1000
+copper_loss_p=R1*Ip^2/1000;
+
+copper_loss_s=R2*Is^2/1000;
 
 total_copper_loss=copper_loss_p+copper_loss_s
 
-total_loss=total_copper_loss+P_core_500;
+
+%Full load copper loss
+
+load_copper_loss_p=R1_70*Ip^2/1000;
+
+load_copper_loss_s=R1_70*Is^2/1000;
+
+total_load_copper_loss=load_copper_loss_p+load_copper_loss_s
+
+total_loss=total_copper_loss+core_loss+total_load_copper_loss;
 
 %% Efficiency
 
-P_out=S*0.96
-efficiency=P_out/(P_out+total_loss);
+P_out=S*0.96;
 
+efficiency=P_out/(P_out+total_loss)*100;
 
+%% Cost
+
+copper_density=8.94*10^3  %g/m^3
+V_wire=(L_primary/1000*Ap/1000000)+(L_secondary/1000*As/1000000)  %mm^3
+
+copper_mass=V_wire*copper_density;
 
