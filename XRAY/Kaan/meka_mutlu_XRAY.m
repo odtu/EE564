@@ -132,7 +132,7 @@ title('W_{Core loss} spread over B');
 % so easy to find odd AWG numbered cables, AWG 24 will be used.
 
 A_awg24 = 0.205*10^-6; %[m^2]
-fprintf('Cross-section area of a AWG 24 wire is %0.2d m^2.',A_awg24)
+fprintf('Cross-section area of a AWG 24 wire is %0.3f mm^2.',A_awg24*10^6)
 
 %%
 % But how many parallel cables? For this purpose, Adiabatic equation will 
@@ -154,10 +154,10 @@ fprintf('Cross-section area of a AWG 24 wire is %0.2d m^2.',A_awg24)
 % $k = 226\sqrt{ln(1+\frac{T_f - T_i}{234.5 + T_i})}$
 % 
 % Here, only required part is initial and final temperatures. If we take
-% initial value as 25 and let it rise 0.5 degrees, than Adiabatic constant
-% will be :
+% initial value as 25 and let it rise 0.5 degrees,
 % 
 k_adb = 226*sqrt(log(1+(25.5-25)/(234.5+25)));
+fprintf('than Adiabatic constant will be : %d',k_adb)
 A_cbl_p = (sqrt((Ip_rms^2)*0.1)/k_adb)*(10^-6);
 A_cbl_s = (sqrt((Is_rms^2)*0.1)/k_adb)*(10^-6);
 
@@ -190,11 +190,12 @@ fprintf('%d parallel cables for primary and %d for secondary side will be OK.',N
 % 
 Cores =['OT44022EC';'OT45724EC';'OT45528EC';'OT45530EC';'OT46527EC'];
 %%  
-% Their cross-section area and core volume parameters are as follow and
-% will be used for coreloss calculations. Volumes are multiplied by 2
-% because it is planned to use two cores as a couple without airgap. Also
-% their window areas are calculated to be able to see if we will be able to
-% have enough space for selected wires with selected number of turns.
+% Their cross-section and core volume, length of cable path and core-flux 
+% path parameters are calculated and will be used for coreloss calculations.
+% Volume and window areas are multiplied by 2 because it is planned to use 
+% two cores as a couple without airgap. Also their window areas are 
+% calculated to be able to see if we will be able to have enough space for 
+% selected wires with selected number of turns.
 
 Ae_T = [233 337 353 420 540]*10^-6; %[m^2]
 Ve_T = [227 360 440 520 790]*2*10^(-7); %[m^3]
@@ -230,6 +231,9 @@ fprintf('For these wires and turns %1.2f W is our copper loss.',Cu_loss)
 fprintf('For two of selected cores, %1.2f W will be our core loss.',Core_loss)
 %%
 %% Determination of efficiency, mass and cost
+
+%%
+% Sum of copper and core losses is our total loss.
 Total_loss = Cu_loss+Core_loss;
 Eff = (Prated)/(Prated+Total_loss)*100;
 fprintf('For %1.2f W total loss, efficiency is %2.2f %%.',Total_loss,Eff)
@@ -237,11 +241,18 @@ fprintf('For %1.2f W total loss, efficiency is %2.2f %%.',Total_loss,Eff)
 %%
 % For selected core, let us calculate the total mass:
 Core_mass = Masses(Selected_core); %[g]
-V_wire_p = N_turn_p*N_cbl_prl_p*(1/Ku)*Lp_T(Selected_core)*A_awg24; %[m^3]
-V_wire_s = N_turn_s*N_cbl_prl_s*(1/Ku)*Lp_T(Selected_core)*A_awg24; %[m^3]
+fprintf('Selected core mass is %d grams.',Core_mass)
+
+L_wire_p = N_turn_p*N_cbl_prl_p*(1/Ku)*Lp_T(Selected_core); %[m]
+V_wire_p = L_wire_p*A_awg24; %[m^3]
+L_wire_s = N_turn_s*N_cbl_prl_s*(1/Ku)*Lp_T(Selected_core); %[m]
+V_wire_s = L_wire_s*A_awg24; %[m^3]
+L_wire = V_wire_p + V_wire_s; %[m]
 Cu_density = 8.94*10^3; %[g/m^3]
+fprintf('Copper density is known and it is %1.2f kg/m^3.',Cu_density*10^-3)
 Copper_mass = (V_wire_p+V_wire_s)*(Cu_density);
 Total_mass = Copper_mass + Core_mass;
+fprintf('For %d m cable, our total copper mass is %3.2f grams.',L_wire, Copper_mass)
 fprintf('Calculated total mass of transformer is %3.2f grams.',Total_mass)
 %%
 fprintf('With aditional materials we may take it as %3.0f grams.',round(Total_mass*1.2))
@@ -255,7 +266,8 @@ Price_total = ceil(Price_Cu+7); %[$]
 fprintf('Total cost of transformer is %2.2f dolars.',Price_total)
 %% Calculation of Electrical Parameters
 %%
-% Using wires' information resistances of both sides will be calculated;
+% Using wires' information resistances of both sides will be calculated
+% with resistance formula:
 % 
 % $R = \frac{{\rho}l}{A}$
 R_p = rho_Cu*Lp_T(Selected_core)*(1/Ku)*N_turn_p/(N_cbl_prl_p*A_awg24);
@@ -268,7 +280,11 @@ fprintf('Secondary side resistance is %2.2f ohm.',R_s)
 %%
 fprintf('Core resistance is %2.2f kiloohm.',R_core*10^-3)
 %% 
-% To be able to calculate magnetizing inductance:
+% To be able to calculate magnetizing inductance, ratio of primary side
+% fundamental rms voltage to magnetizing current will be used. For
+% magnetizing current calculations:
+%
+% $I_{mag}=\frac{Hl_E}{N_pri}$
 mu = 3000*4*pi*10^-7;
 H = B_opr/mu; 
 I_mag = H*Le_T(Selected_core)/N_turn_p;
@@ -277,7 +293,26 @@ Xmag = sqrt((Zmag^2)-(R_core^-2));
 Lmag = Xmag/(2*pi*fs);
 fprintf('Magnetizing inductance is %2.2f miliHenry.',Lmag*10^3)
 
+%% Conclusion
+
 %%
+% During all design steps maximum efficiency is taken as main
+% consideration. Operation flux density is selected for the least core loss
+% point. Initial material is also selected because its low core loss
+% coefficient property for operationg switching frequency and temperature.
+% Skin effect limits the conductor's effective cross-sectional area so the
+% most appropriate option is selected for the optimal result. After that
+% selection, it is decided to how many conductors will be paralleled in
+% both sides. Considering their temperature rise and conductor thicknisses
+% these numbers are choosen. Next step was deciding core dimensions and 
+% number of turns. At that point, considering core volume and corresponding
+% core loss among with number of turns and copper losses the most optimum
+% couple is selected. During this optimization it is also checked if window
+% area of core is enough for this combination. Mass and cost are calculated
+% and electical parameters are defined. There are missing parts and some
+% assumptions throughout the design but efficiency is satisfaying.
+
+%% B optimization function
     function [output] = optimize_B()   
         B_given = [80 90 100 200 300]; % [mT]
         Coreloss_coef = [25 32 45 120 900]*1.2*10^-3; % [W/cm^3]
@@ -291,7 +326,7 @@ fprintf('Magnetizing inductance is %2.2f miliHenry.',Lmag*10^3)
         
         output = B_req(find(Coreloss==min(Coreloss)))*10^-3; % [T]
     end
-%%
+%% Lagrange Interpolation function
     function L=lagrange(x,y,k)
         n=length(x);
         l=1;
@@ -306,7 +341,7 @@ fprintf('Magnetizing inductance is %2.2f miliHenry.',Lmag*10^3)
             l=1;
         end; 
     end; 
-%%
+%% Core selection optimization function
     function [output] = Core_selection()
         Corelosses = Ve_T.*10^6*25*1.2*10^-3; % [W]
         rho_Cu = 1.678*10^-8;
