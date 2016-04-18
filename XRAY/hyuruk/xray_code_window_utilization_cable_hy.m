@@ -11,8 +11,7 @@
 % for more details see below link
 % http://coefs.uncc.edu/mnoras/files/2013/03/
 % Transformer-and-Inductor-Design-Handbook_Chapter_4.pdf
-% assume
-% Np*Awp = 1.1 * Ns*Aws (to allow for losses)
+
 
 % for AWG26 @100kHz
 s1 = 0.79;             
@@ -22,7 +21,7 @@ s4 = 1;
 Ku = s1*s2*s3*s4;
 
 Aws = Ku * Wa * 10^2 / (2.1 * ceil(Ns));   % [mm^2]
-Awp = 1.1 * ceil(Ns) * Aws / round(Np);          % [mm^2]
+Awp = ceil(Ns) * Aws / round(Np);          % [mm^2]
     
 % mm^2   %requirred wire size for choosen current density 
 Awp_req = Ip / J;      
