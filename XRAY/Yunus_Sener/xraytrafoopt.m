@@ -25,7 +25,7 @@ showpltmu=0;
 
 Ac=0.5;
 while(Ac<12)
-Np=Vin*10^4/(4*Bm*Ac*f);  %Ac cm^2 girilmeli
+Np=ceil(Vin*10^4/(4*Bm*Ac*f));  %Ac cm^2 girilmeli
 Ns=Np*Vout/Vin;
 J=200; %A/cm^2
 Ip=Pout/eff/Vin;
@@ -69,7 +69,7 @@ showpltzu(counter)=CoreLoss;
 showplttu(counter)=CopperLoss;
 showpltmu(counter)=Loss;
 counter=counter+1;
-if (Ac == 9.5)
+
 Ac
 MeanCoreLength
 WeightCore
@@ -84,7 +84,9 @@ eff
 Rp
 Rs
 Lmagpri
-end
+Np
+Ns
+
 end
 figure;
 plot(showpltxu,showpltyu,'b.-',showpltxu,showpltmu,'r.-')

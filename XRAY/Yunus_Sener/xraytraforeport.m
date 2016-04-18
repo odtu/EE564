@@ -62,18 +62,18 @@ pcu=100*1.68*10^(-8);%Ohm.cm
 % Skin depth of copper at 100kHz=0.206mm
 
 %%
-% When Core area(Ac) is equal to 8.9cm^2, minimum cost occurs. (Obtained by xraytrafoopt.m)
+% When Core area(Ac) is equal to 8.8cm^2, minimum cost occurs. (Obtained by xraytrafoopt.m)
 % However core area is rounded to 9cm^2. All the following equations are related to
-% core area, since only one variable is to be optimized, by sweeping core area value
-% corea area for minumum is obtained.
+% core area. Since only one variable is to be optimized, by sweeping core area value
+% minumum cost is obtained.
 Ac=9; %cm'2
 %%
 % Required Turn Number for primary is calcualated according to emf formula
 % for square wave. 
-Np=Vin*10^4/(4*Bm*Ac*f);  %Ac cm^2 girilmeli
+Np=ceil(Vin*10^4/(4*Bm*Ac*f));  %Ac cm^2 girilmeli
 %%
 % Required Turn Number for secondary is calcualated by turns ratio. 
-Ns=Np*Vout/Vin;
+Ns=ceil(Np*Vout/Vin);
 %%
 % Primary Current is calculated such that efficiency of the transformer is 95%
 eff=0.95;
@@ -175,7 +175,8 @@ CoreVolume=Ac*MeanCoreLength;
 % Core Weight is calculated.
 WeightCore=CoreVolume*dCore;
 %%
-% Cost of transformer is calculated according to cost models describen in [1]
+% Cost of transformer is calculated according to cost models describen in
+% [1].
 CopperCost=34*WeightCopper/1000+4.5;
 CoreCost=WeightCore*5.5/1000;
 Cost=CopperCost+CoreCost;
@@ -203,17 +204,95 @@ eff=Pout/(Loss+Pout);
 % Magnetizing inductance value is calculated by using reluctance.
 Lmagpri=Np^2*u*(Ac/MeanCoreLength/100);
 
+%% Results
+%%
+% Core Parameters
 Ac
+%%
+% cm^2
 MeanCoreLength
+%%
+% cm
 WeightCore
+%%
+% g
+WeightCopper
+%%
+% g
 Hwinding
+%%
+% cm
 Wwinding
+%%
+% cm
 Aw
-Cost
+%%
+% cm^2
+
+%%
+%%
+% Coil Parameters
+Np
+%%
+Ns
+%%
+MeanPrimaryLengthperTurn*Np
+%%
+% cm
+MeanSecondaryLengthperTurn*Ns
+%%
+% cm
+FoilCoilThickness
+%%
+% cm^2
+%%
+%%
+% Loss Parameters
 CopperLoss
+%%
+% W
 CoreLoss
+%%
+% W
 Loss
+%%
+% W
 eff
+%%
+% Electrical Parameters
 Rp
+%%
+% OHM
 Rs
+%%
+% OHM
 Lmagpri
+%%
+% H
+%%
+%%
+% Cost
+Cost
+%%
+% €
+%%
+%% Conclusion
+% Transformer can be designed in different ways to satisfy design
+% requirements. In this design it is assumed that transformer is not used
+% heavily thus it is focused on minimizing production cost. 
+% First core type is selected. U type P material core is assumed to 
+% be used in this design. After calculating skin depth at 100kHz, foil coil
+% is decided to be used instead of using wires in paralel. Some assumptions
+% such as maximum flux density and current density in wires are done. With
+% these assumptions, core area is swept to observe where minimum cost
+% occurs. The results in this report are calculated with respect to minimum
+% cost. xraytrafoopt.m also generates loss versus core area graph thus 
+% design values for highest efficiency can also be calculated. By this
+% project, it is concluded that transformer design requires optimization
+% and there is not unique solution.
+%%
+%% References
+% 1. Burkart, R.; Kolar, J.W., "Component cost models for multi-objective 
+% optimizations of switched-mode power converters," in Energy Conversion 
+% Congress and Exposition (ECCE), 2013 IEEE , vol., no., 
+% pp.2139-2146, 15-19 Sept. 2013

@@ -1,0 +1,625 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>EE564 - Design of Electrical Machines</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2016-04-18">
+      <meta name="m-file" content="xraytraforeport"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>EE564 - Design of Electrical Machines</h1>
+         <introduction></introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Project-1: Transformer Design for X-Rays</a></li>
+               <li><a href="#10">Procedure</a></li>
+               <li><a href="#59">Results</a></li>
+               <li><a href="#88">Conclusion</a></li>
+               <li><a href="#90">References</a></li>
+            </ul>
+         </div>
+         <h2>Project-1: Transformer Design for X-Rays<a name="1"></a></h2>
+         <p>Yunus &#350;ENER ID: 1675248</p>
+         <p>Specifications</p>
+         <p>X-ray transformer</p>
+         <p>Single-phase, high frequency, high voltage</p>
+         <p>Primary Winding Voltage &plusmn; 417 V (peak to peak 834 V for pulsing)</p>
+         <p>Secondary Winding Voltage &plusmn; 12.5 kV (peak to peak 25 kV for pulsing)</p>
+         <p>Rated Power 30 kW (for maximum 100 millisecond)</p>
+         <p>Switching Frequency Minimum 100 kHz</p>
+         <h2>Procedure<a name="10"></a></h2>
+         <p>Core Selection</p>
+         <p>P Type Material ferrite U core is selected.</p>
+         <p>Saturation Flux Density is set to be 0.3T</p>
+         <p>Since this transformer is not operated continuosly, production cost is optimized. It is observed that it is not very efficient
+            when cost is optimezed.
+         </p>
+         <p>Core Area is swept to obtain minimum cost(xraytrafoopt.m).</p>
+         <p>Design Specifications</p><pre class="codeinput">Vin = 417; <span class="comment">%V</span>
+Vout = 12500; <span class="comment">%V</span>
+Pout = 30000; <span class="comment">%W</span>
+</pre><p>Saturation flux:</p><pre class="codeinput">Bm=0.3; <span class="comment">%T</span>
+</pre><p>Permeability:</p><pre class="codeinput">ur=2500;
+u0=4*pi*10^-7; <span class="comment">%H/m</span>
+u=ur*u0; <span class="comment">%H/m</span>
+</pre><p>Switching frequency;</p><pre class="codeinput">f=100000; <span class="comment">%Hz</span>
+</pre><p>Current Density is set to be 2A/mm^2</p><pre class="codeinput">J=200; <span class="comment">%A/cm^2</span>
+</pre><p>Densities are used to calculate weigths of copper and core.</p><pre class="codeinput">dCopper=8.96; <span class="comment">%g/cm^3;</span>
+dCore=5; <span class="comment">%g/cm^3;</span>
+</pre><p>Resistivity of Copper:</p><pre class="codeinput">pcu=100*1.68*10^(-8);<span class="comment">%Ohm.cm</span>
+</pre><p>Skin depth of copper at 100kHz=0.206mm</p>
+         <p>When Core area(Ac) is equal to 8.8cm^2, minimum cost occurs. (Obtained by xraytrafoopt.m) However core area is rounded to
+            9cm^2. All the following equations are related to core area. Since only one variable is to be optimized, by sweeping core
+            area value minumum cost is obtained.
+         </p><pre class="codeinput">Ac=9; <span class="comment">%cm'2</span>
+</pre><p>Required Turn Number for primary is calcualated according to emf formula for square wave.</p><pre class="codeinput">Np=ceil(Vin*10^4/(4*Bm*Ac*f));  <span class="comment">%Ac cm^2 girilmeli</span>
+</pre><p>Required Turn Number for secondary is calcualated by turns ratio.</p><pre class="codeinput">Ns=ceil(Np*Vout/Vin);
+</pre><p>Primary Current is calculated such that efficiency of the transformer is 95%</p><pre class="codeinput">eff=0.95;
+Ip=Pout/eff/Vin;
+</pre><p>Primary Wire Size is calculated by dividing current by current density</p><pre class="codeinput">PrimaryWireSize=Ip/J; <span class="comment">%cm^2</span>
+</pre><p>Instead of using parallel wires, foil coil is used. Foil Coil Thickness is selected to be 0.206 mm which is equal to skin
+            depth.
+         </p><pre class="codeinput">FoilCoilThickness=0.206/10; <span class="comment">%cm</span>
+</pre><p>Primary foil coil width is calculated by dividing wire size by foil coil thickness.</p><pre class="codeinput">PrimaryFoilCoilWidth=PrimaryWireSize/FoilCoilThickness; <span class="comment">%cm</span>
+</pre><p>Winding height is assumed to be 10% more than primary foil coil width. Thus for primary side, one wide foil coil is winded
+            around core. Foil coil width determines the winding height.
+         </p><pre class="codeinput">Hwinding=PrimaryFoilCoilWidth*1.1;
+</pre><p>Secondary Current is calculated by dividing output power to output voltage.</p><pre class="codeinput">Is=Pout/Vout;
+</pre><p>Secondary Wire Size is calculated by dividing current by current density</p><pre class="codeinput">SecondaryWireSize=Is/J; <span class="comment">%cm^2</span>
+</pre><p>Secondary foil coil width is calculated by dividing wire size by foil coil thickness. Foil coil thickness is same for primary
+            and secondary.
+         </p><pre class="codeinput">SecondaryFoilCoilWidth=SecondaryWireSize/FoilCoilThickness;
+</pre><p>Since secondary foil coil width is much smaller than winding height, more turns are done each level as shown in trafo&#351;ekil.ppt.
+            Layer Level is defined as number of coils which overlap. It is obtained by dividing secondary turn number to the turn number
+            each layer.
+         </p><pre class="codeinput">SecondaryLayerLevel=Ns/(PrimaryFoilCoilWidth/SecondaryFoilCoilWidth);
+</pre><p>It is assumed that coils are winded from bottom to top in odd levels (i.e first) and from top to bottom in even levels (i.e
+            second). Voltage over each layer is obtained by dividing output voltage to layer level. Thus maximum voltage over each layer
+            is calculated twice of each level.
+         </p><pre class="codeinput">SecondaryVoltageLevelperlayer=Vout*2/SecondaryLayerLevel;
+</pre><p>PCB clearance calculater(html) is used to model required isolation between two overlapping windings.</p><pre class="codeinput">SecondaryIsolationDistance=SecondaryVoltageLevelperlayer*6.4/12500;
+</pre><p>Primary isolation distance is calculated for 417V and used same for each overlapping coil.</p><pre class="codeinput">PrimaryIsolationLength=0.3;
+</pre><p>Winding width is calculated by adding required widths for windings and isolation. Primary winding width is calculated by multiplying
+            primary turn number by sum of required isolation coil thickness.
+         </p><pre class="codeinput">Wwindingprimary = Np*(FoilCoilThickness+PrimaryIsolationLength);
+</pre><p>Secondary winding width is calculated by multiplying secondary layer level by sum of required isolation coil thickness.</p><pre class="codeinput">Wwindingsecondary = SecondaryLayerLevel*(FoilCoilThickness+SecondaryIsolationDistance);
+</pre><p>12.5kV isolation distance is put between primary and secondary.</p><pre class="codeinput">Wwindingprisec= IsolationLengthat12500V;
+</pre><p>Core is assumed to be square. Coils are winded circular. Thus there is gap between first coil and core. It is assumed that
+            coil is tangential at cornets of core. This gap is calculated as half of difference between dioganal length of core and side
+            length of core. It is added twice.(One for primary, one for secondary.
+         </p><pre class="codeinput">Wwindigcore= sqrt(Ac)*sqrt(2);
+</pre><p>All widths are added to find winding width.</p><pre class="codeinput">Wwinding=Wwindingprimary + Wwindingsecondary + Wwindingprisec + Wwindigcore;
+</pre><p>Winding area is calculated by multiplying height and width.</p><pre class="codeinput">Aw=Hwinding*Wwinding;
+</pre><p>Mean coil length per turn for primary side is taken is circumferance of wire in the middle point of innermost and outermost
+            coils.
+         </p><pre class="codeinput">MeanPrimaryLengthperTurn=((sqrt(Ac)/sqrt(2)+Np/2*(FoilCoilThickness+PrimaryIsolationLength))*2*pi);
+</pre><p>Copper weight for primary side is calculated by mean turn length, primary turn number, coil and density of copper.</p><pre class="codeinput">WeightCopperPrimary=Np*FoilCoilThickness*PrimaryFoilCoilWidth*MeanPrimaryLengthperTurn*dCopper; <span class="comment">%g</span>
+</pre><p>Secondary coil length per turn and copper weight is calculated in similar way.</p><pre class="codeinput">MeanSecondaryLengthperTurn=((sqrt(Ac)/sqrt(2)+SecondaryLayerLevel/2*(FoilCoilThickness+SecondaryIsolationDistance))*2*pi);
+WeightCopperSecondary=Ns*FoilCoilThickness*SecondaryFoilCoilWidth*MeanSecondaryLengthperTurn*dCopper; <span class="comment">%g</span>
+WeightCopper=WeightCopperPrimary+WeightCopperSecondary;
+</pre><p>Mean core length is calculated by using height and width of winding.</p><pre class="codeinput">MeanCoreLength=2*(Hwinding+sqrt(Ac)+Wwinding+sqrt(Ac));
+</pre><p>Core volume is calculated by multipliying core area with mean core length.</p><pre class="codeinput">CoreVolume=Ac*MeanCoreLength;
+</pre><p>Core Weight is calculated.</p><pre class="codeinput">WeightCore=CoreVolume*dCore;
+</pre><p>Cost of transformer is calculated according to cost models describen in [1].</p><pre class="codeinput">CopperCost=34*WeightCopper/1000+4.5;
+CoreCost=WeightCore*5.5/1000;
+Cost=CopperCost+CoreCost;
+</pre><p>Core loss graph for P material is given in "Magnetics" datasheet. Core loss is calculated by multiplying core volume by value
+            given in datasheet.
+         </p><pre class="codeinput">CoreLoss=CoreVolume*1.05;
+</pre><p>Primary resistance is calculated.</p><pre class="codeinput">Rp=pcu*MeanPrimaryLengthperTurn*Np/PrimaryWireSize;
+</pre><p>Secondary resistance is calculated.</p><pre class="codeinput">Rs=pcu*MeanSecondaryLengthperTurn*Ns/(SecondaryWireSize);
+</pre><p>Copper loss is calculated.</p><pre class="codeinput">CopperLoss=Rp*Ip^2+Rs*Is^2;
+</pre><p>Total loss is calcualated.</p><pre class="codeinput">Loss=CoreLoss+CopperLoss;
+</pre><p>Actual efficiency is calculated.</p><pre class="codeinput">eff=Pout/(Loss+Pout);
+</pre><p>Magnetizing inductance value is calculated by using reluctance.</p><pre class="codeinput">Lmagpri=Np^2*u*(Ac/MeanCoreLength/100);
+</pre><h2>Results<a name="59"></a></h2>
+         <p>Core Parameters</p><pre class="codeinput">Ac
+</pre><pre class="codeoutput">
+Ac =
+
+     9
+
+</pre><p>cm^2</p><pre class="codeinput">MeanCoreLength
+</pre><pre class="codeoutput">
+MeanCoreLength =
+
+  102.0445
+
+</pre><p>cm</p><pre class="codeinput">WeightCore
+</pre><pre class="codeoutput">
+WeightCore =
+
+  4.5920e+003
+
+</pre><p>g</p><pre class="codeinput">WeightCopper
+</pre><pre class="codeoutput">
+WeightCopper =
+
+  929.5344
+
+</pre><p>g</p><pre class="codeinput">Hwinding
+</pre><pre class="codeoutput">
+Hwinding =
+
+   20.2189
+
+</pre><p>cm</p><pre class="codeinput">Wwinding
+</pre><pre class="codeoutput">
+Wwinding =
+
+   24.8034
+
+</pre><p>cm</p><pre class="codeinput">Aw
+</pre><pre class="codeoutput">
+Aw =
+
+  501.4966
+
+</pre><p>cm^2</p>
+         <p>Coil Parameters</p><pre class="codeinput">Np
+</pre><pre class="codeoutput">
+Np =
+
+     4
+
+</pre><pre class="codeinput">Ns
+</pre><pre class="codeoutput">
+Ns =
+
+   120
+
+</pre><pre class="codeinput">MeanPrimaryLengthperTurn*Np
+</pre><pre class="codeoutput">
+ans =
+
+   69.4297
+
+</pre><p>cm</p><pre class="codeinput">MeanSecondaryLengthperTurn*Ns
+</pre><pre class="codeoutput">
+ans =
+
+  6.4545e+003
+
+</pre><p>cm</p><pre class="codeinput">FoilCoilThickness
+</pre><pre class="codeoutput">
+FoilCoilThickness =
+
+    0.0206
+
+</pre><p>cm^2</p>
+         <p>Loss Parameters</p><pre class="codeinput">CopperLoss
+</pre><pre class="codeoutput">
+CopperLoss =
+
+    6.9715
+
+</pre><p>W</p><pre class="codeinput">CoreLoss
+</pre><pre class="codeoutput">
+CoreLoss =
+
+  964.3207
+
+</pre><p>W</p><pre class="codeinput">Loss
+</pre><pre class="codeoutput">
+Loss =
+
+  971.2923
+
+</pre><p>W</p><pre class="codeinput">eff
+</pre><pre class="codeoutput">
+eff =
+
+    0.9686
+
+</pre><p>Electrical Parameters</p><pre class="codeinput">Rp
+</pre><pre class="codeoutput">
+Rp =
+
+  3.0805e-004
+
+</pre><p>OHM</p><pre class="codeinput">Rs
+</pre><pre class="codeoutput">
+Rs =
+
+    0.9036
+
+</pre><p>OHM</p><pre class="codeinput">Lmagpri
+</pre><pre class="codeoutput">
+Lmagpri =
+
+  4.4333e-005
+
+</pre><p>H</p>
+         <p>Cost</p><pre class="codeinput">Cost
+</pre><pre class="codeoutput">
+Cost =
+
+   61.3602
+
+</pre><p>&#8364;</p>
+         <h2>Conclusion<a name="88"></a></h2>
+         <p>Transformer can be designed in different ways to satisfy design requirements. In this design it is assumed that transformer
+            is not used heavily thus it is focused on minimizing production cost. First core type is selected. U type P material core
+            is assumed to be used in this design. After calculating skin depth at 100kHz, foil coil is decided to be used instead of using
+            wires in paralel. Some assumptions such as maximum flux density and current density in wires are done. With these assumptions,
+            core area is swept to observe where minimum cost occurs. The results in this report are calculated with respect to minimum
+            cost. xraytrafoopt.m also generates loss versus core area graph thus design values for highest efficiency can also be calculated.
+            By this project, it is concluded that transformer design requires optimization and there is not unique solution.
+         </p>
+         <h2>References<a name="90"></a></h2>
+         <p>1. Burkart, R.; Kolar, J.W., "Component cost models for multi-objective optimizations of switched-mode power converters,"
+            in Energy Conversion Congress and Exposition (ECCE), 2013 IEEE , vol., no., pp.2139-2146, 15-19 Sept. 2013
+         </p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% EE564 - Design of Electrical Machines
+%% Project-1: Transformer Design for X-Rays
+%%
+% Yunus ŞENER
+% ID: 1675248
+
+%%
+% Specifications
+
+%%
+% X-ray transformer
+%%
+% Single-phase, high frequency, high voltage
+%%
+% Primary Winding Voltage ± 417 V (peak to peak 834 V for pulsing)
+%%
+% Secondary Winding Voltage ± 12.5 kV (peak to peak 25 kV for pulsing)
+%%
+% Rated Power 30 kW (for maximum 100 millisecond)
+%%
+% Switching Frequency Minimum 100 kHz
+
+%% Procedure
+%%
+% Core Selection
+%%
+% P Type Material ferrite U core is selected.
+%%
+% Saturation Flux Density is set to be 0.3T
+%%
+% Since this transformer is not operated continuosly, production cost is optimized.
+% It is observed that it is not very efficient when cost is optimezed.
+%%
+% Core Area is swept to obtain minimum cost(xraytrafoopt.m).
+%%
+% Design Specifications
+Vin = 417; %V
+Vout = 12500; %V   
+Pout = 30000; %W
+%%
+% Saturation flux:
+Bm=0.3; %T
+%%
+% Permeability:
+ur=2500;
+u0=4*pi*10^-7; %H/m
+u=ur*u0; %H/m
+%%
+% Switching frequency;
+f=100000; %Hz
+%%
+% Current Density is set to be 2A/mm^2
+J=200; %A/cm^2
+%%
+% Densities are used to calculate weigths of copper and core.
+dCopper=8.96; %g/cm^3;
+dCore=5; %g/cm^3;
+%%
+% Resistivity of Copper:
+pcu=100*1.68*10^(-8);%Ohm.cm
+%%
+% Skin depth of copper at 100kHz=0.206mm
+
+%%
+% When Core area(Ac) is equal to 8.8cm^2, minimum cost occurs. (Obtained by xraytrafoopt.m)
+% However core area is rounded to 9cm^2. All the following equations are related to
+% core area. Since only one variable is to be optimized, by sweeping core area value
+% minumum cost is obtained.
+Ac=9; %cm'2
+%%
+% Required Turn Number for primary is calcualated according to emf formula
+% for square wave. 
+Np=ceil(Vin*10^4/(4*Bm*Ac*f));  %Ac cm^2 girilmeli
+%%
+% Required Turn Number for secondary is calcualated by turns ratio. 
+Ns=ceil(Np*Vout/Vin);
+%%
+% Primary Current is calculated such that efficiency of the transformer is 95%
+eff=0.95;
+Ip=Pout/eff/Vin;
+%%
+% Primary Wire Size is calculated by dividing current by current density
+PrimaryWireSize=Ip/J; %cm^2
+%%
+% Instead of using parallel wires, foil coil is used.
+% Foil Coil Thickness is selected to be 0.206 mm which is equal to skin depth. 
+FoilCoilThickness=0.206/10; %cm
+%%
+% Primary foil coil width is calculated by dividing wire size by foil coil
+% thickness.
+PrimaryFoilCoilWidth=PrimaryWireSize/FoilCoilThickness; %cm
+%%
+% Winding height is assumed to be 10% more than primary foil coil width.
+% Thus for primary side, one wide foil coil is winded around core. Foil
+% coil width determines the winding height.
+Hwinding=PrimaryFoilCoilWidth*1.1;
+%%
+% Secondary Current is calculated by dividing output power to output
+% voltage.
+Is=Pout/Vout;
+%%
+% Secondary Wire Size is calculated by dividing current by current density
+SecondaryWireSize=Is/J; %cm^2
+%%
+% Secondary foil coil width is calculated by dividing wire size by foil coil
+% thickness. Foil coil thickness is same for primary and secondary.
+SecondaryFoilCoilWidth=SecondaryWireSize/FoilCoilThickness;
+%%
+% Since secondary foil coil width is much smaller than winding height, more
+% turns are done each level as shown in trafoşekil.ppt.
+% Layer Level is defined as number of coils which overlap. It is obtained by
+% dividing secondary turn number to the turn number each layer.
+SecondaryLayerLevel=Ns/(PrimaryFoilCoilWidth/SecondaryFoilCoilWidth);
+%%
+% It is assumed that coils are winded from bottom to top in odd levels (i.e
+% first) and from top to bottom in even levels (i.e second).
+% Voltage over each layer is obtained by dividing output voltage to layer
+% level. Thus maximum voltage over each layer is calculated twice of each
+% level.
+SecondaryVoltageLevelperlayer=Vout*2/SecondaryLayerLevel;
+%%
+% PCB clearance calculater(html) is used to model required isolation
+% between two overlapping windings.
+SecondaryIsolationDistance=SecondaryVoltageLevelperlayer*6.4/12500;
+%%
+% Primary isolation distance is calculated for 417V and used same for each
+% overlapping coil.
+PrimaryIsolationLength=0.3;
+%%
+% Winding width is calculated by adding required widths for windings and
+% isolation.
+% Primary winding width is calculated by multiplying primary turn number by
+% sum of required isolation coil thickness.
+Wwindingprimary = Np*(FoilCoilThickness+PrimaryIsolationLength);
+%%
+% Secondary winding width is calculated by multiplying secondary layer level by
+% sum of required isolation coil thickness.
+Wwindingsecondary = SecondaryLayerLevel*(FoilCoilThickness+SecondaryIsolationDistance);
+%%
+% 12.5kV isolation distance is put between primary and secondary.
+Wwindingprisec= IsolationLengthat12500V;
+%%
+% Core is assumed to be square. Coils are winded circular. Thus there is gap between
+% first coil and core. It is assumed that coil is tangential at cornets of core. 
+% This gap is calculated as half of difference between dioganal length of
+% core and side length of core. It is added twice.(One for primary, one for secondary. 
+Wwindigcore= sqrt(Ac)*sqrt(2);
+%%
+% All widths are added to find winding width.
+Wwinding=Wwindingprimary + Wwindingsecondary + Wwindingprisec + Wwindigcore;
+%%
+% Winding area is calculated by multiplying height and width.
+Aw=Hwinding*Wwinding;
+%%
+% Mean coil length per turn for primary side is taken is circumferance of 
+% wire in the middle point of innermost and outermost coils. 
+MeanPrimaryLengthperTurn=((sqrt(Ac)/sqrt(2)+Np/2*(FoilCoilThickness+PrimaryIsolationLength))*2*pi);
+%%
+% Copper weight for primary side is calculated by mean turn length, 
+% primary turn number, coil and density of copper. 
+WeightCopperPrimary=Np*FoilCoilThickness*PrimaryFoilCoilWidth*MeanPrimaryLengthperTurn*dCopper; %g
+%%
+% Secondary coil length per turn and copper weight is calculated in similar way. 
+MeanSecondaryLengthperTurn=((sqrt(Ac)/sqrt(2)+SecondaryLayerLevel/2*(FoilCoilThickness+SecondaryIsolationDistance))*2*pi);
+WeightCopperSecondary=Ns*FoilCoilThickness*SecondaryFoilCoilWidth*MeanSecondaryLengthperTurn*dCopper; %g
+WeightCopper=WeightCopperPrimary+WeightCopperSecondary;
+%%
+% Mean core length is calculated by using height and width of winding. 
+MeanCoreLength=2*(Hwinding+sqrt(Ac)+Wwinding+sqrt(Ac));
+%%
+% Core volume is calculated by multipliying core area with mean core
+% length.
+CoreVolume=Ac*MeanCoreLength;
+%%
+% Core Weight is calculated.
+WeightCore=CoreVolume*dCore;
+%%
+% Cost of transformer is calculated according to cost models describen in
+% [1].
+CopperCost=34*WeightCopper/1000+4.5;
+CoreCost=WeightCore*5.5/1000;
+Cost=CopperCost+CoreCost;
+%%
+% Core loss graph for P material is given in "Magnetics" datasheet. Core
+% loss is calculated by multiplying core volume by value given in
+% datasheet.
+CoreLoss=CoreVolume*1.05;
+%%
+% Primary resistance is calculated.
+Rp=pcu*MeanPrimaryLengthperTurn*Np/PrimaryWireSize;
+%%
+% Secondary resistance is calculated.
+Rs=pcu*MeanSecondaryLengthperTurn*Ns/(SecondaryWireSize);
+%%
+% Copper loss is calculated.
+CopperLoss=Rp*Ip^2+Rs*Is^2;
+%%
+% Total loss is calcualated.
+Loss=CoreLoss+CopperLoss;
+%%
+% Actual efficiency is calculated.
+eff=Pout/(Loss+Pout);
+%%
+% Magnetizing inductance value is calculated by using reluctance.
+Lmagpri=Np^2*u*(Ac/MeanCoreLength/100);
+
+%% Results
+%%
+% Core Parameters
+Ac
+%%
+% cm^2
+MeanCoreLength
+%%
+% cm
+WeightCore
+%%
+% g
+WeightCopper
+%%
+% g
+Hwinding
+%%
+% cm
+Wwinding
+%%
+% cm
+Aw
+%%
+% cm^2
+
+%%
+%%
+% Coil Parameters
+Np
+%%
+Ns
+%%
+MeanPrimaryLengthperTurn*Np
+%%
+% cm
+MeanSecondaryLengthperTurn*Ns
+%%
+% cm
+FoilCoilThickness
+%%
+% cm^2
+%%
+%%
+% Loss Parameters
+CopperLoss
+%%
+% W
+CoreLoss
+%%
+% W
+Loss
+%%
+% W
+eff
+%%
+% Electrical Parameters
+Rp
+%%
+% OHM
+Rs
+%%
+% OHM
+Lmagpri
+%%
+% H
+%%
+%%
+% Cost
+Cost
+%%
+% €
+%%
+%% Conclusion
+% Transformer can be designed in different ways to satisfy design
+% requirements. In this design it is assumed that transformer is not used
+% heavily thus it is focused on minimizing production cost. 
+% First core type is selected. U type P material core is assumed to 
+% be used in this design. After calculating skin depth at 100kHz, foil coil
+% is decided to be used instead of using wires in paralel. Some assumptions
+% such as maximum flux density and current density in wires are done. With
+% these assumptions, core area is swept to observe where minimum cost
+% occurs. The results in this report are calculated with respect to minimum
+% cost. xraytrafoopt.m also generates loss versus core area graph thus 
+% design values for highest efficiency can also be calculated. By this
+% project, it is concluded that transformer design requires optimization
+% and there is not unique solution.
+%%
+%% References
+% 1. Burkart, R.; Kolar, J.W., "Component cost models for multi-objective 
+% optimizations of switched-mode power converters," in Energy Conversion 
+% Congress and Exposition (ECCE), 2013 IEEE , vol., no., 
+% pp.2139-2146, 15-19 Sept. 2013
+
+##### SOURCE END #####
+-->
+   </body>
+</html>
