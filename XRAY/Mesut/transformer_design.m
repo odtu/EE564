@@ -1000,9 +1000,14 @@ title('Litz Wire to Eliminate the Proximity Effect','FontSize',12,'FontWeight','
 % (leakage) inductances and capacitances become more crucial.
 %%
 % Core materials such as ferrites, amorphous and nanocrystalline have been
-% suggested and used in high frequency magnetics designs. In this roject,
+% suggested and used in high frequency magnetics designs. In this project,
 % ferrite core is selected for its relatively low core losses and low cost
-% although they have a smaller saturation flux density.
+% although it has a smaller saturation flux density. Designs with a
+% nanocrystalline core would yield a further reduction in core size, mass
+% and loss as the peak flux density could be selected larger.
+% Alternatively, turn number could be selected smaller resulting in an
+% improvement in the overall efficiency. Nevertheless, cost of the design
+% would increase significantly.
 %% 
 % A design procedure
 % is suggested in which, by using the design specifications and selected
@@ -1012,17 +1017,31 @@ title('Litz Wire to Eliminate the Proximity Effect','FontSize',12,'FontWeight','
 % cores (one with EE type and one with U type) and they are compared in
 % terms of several constraints. To eliminate the skin effect, AWG#26 wire
 % is selected to be used with several strands in parallel to carry the
-% rated currents of the transformer.  
+% rated currents of the transformer.
+%%
+% Turn number calculation is based on the induced EMF formula for a
+% specified core area, frequency and peak flux density. Windings
+% resistances and copper losses are calculated based on the number of turns
+% the selected wire. Core loss calculation is based on the empirical
+% formulas provided by the catalogue. Since the operation is square wave,
+% harmonic orders up to 31 have been considered for core loss.
 %%
 % After the selection of the core material, type, dimensions etc which
 % belongs to the Magnetics Inc., the actual design is achieved with the
 % calculation of finalised parameters listed above. For the high voltage
 % side which has a high number of turns, an iterative deisgn to determine
 % the most suitable number of layers which turned out to be 6. A winding
-% geometry is proposed to minimize the leakage inductances.
+% geometry is proposed to minimize the leakage inductances. Leakage
+% inductances are more problematic in this kind of project (compared to
+% lower frequency designs) cue to not only the voltage regulation, but also
+% voltage spikes created by the square wave operation at high frequencies.
 %%
 % Temperature rise is calculated and it is understood that no cooling is
-% required as expected. The transformer mass has also been determined.
+% required as expected. The transformer mass has also been calculated (for 
+% both copper and core material) to be used in cost determination.
+%%
+% For proximity effect which is effective especially for high frequency
+% transformers, bundled conductors (such as litz wires) have been proposed.
 %%
 % Finally, equivalent circuit parameters of the designed transformer are
 % calculated including resistances representing copper losses and core
@@ -1046,7 +1065,7 @@ title('Litz Wire to Eliminate the Proximity Effect','FontSize',12,'FontWeight','
 %%
 % 6. http://www.magnetec.de/fileadmin/pdf/np_powerelectronic_e.pdf
 %%
-% 7. https://www.mag-inc.com
+% 7. Ferrite Cores Catalogue 2013, Magnetics, https://www.mag-inc.com
 %%
 % 8. Power Design: Core Selection, Magnetics Inc.
 %%
