@@ -185,10 +185,8 @@ for k = 1:10
 end
 
 % In the book, 96,90,84 and 54 are suggested with one stator slot skew
-% Table 7.5
-Qr = 90;
-qr = Qr/(pole*phase);
-% harmful synchronous torque at steady state
+
+%qr = Qr/(pole*phase)
 
 
 %%

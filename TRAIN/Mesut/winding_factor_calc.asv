@@ -1,0 +1,7 @@
+function [kd,kp,kw] = winding_factor_calc(alfa,q,lambda)
+    harmonic = 1:2:31;
+    kd = sin(qs*slot_angle/2)/(qs*sin(slot_angle/2));
+    kp1 = sin(pitch_angle/2);
+    kw1 = kd1*kp1;
+
+end
