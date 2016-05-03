@@ -1,6 +1,5 @@
 p_rated=270000 ;  %Watts
-speed_max=155; % max speed in mph
-speed_max=speed_max*1.61 ; % kmh
+speed_max=225; % kmh
 gear_ratio=9.73 ;
 pf=0.90;
 efficiency=0.95;
@@ -17,6 +16,20 @@ wheel_rpm=floor(wheel_rpm)
 %electric motor rpm
 motor_rpm=wheel_rpm*gear_ratio ;
 motor_rpm=round(motor_rpm)
+
+%V_fundamental calculation
+v_battery=375 % V given
+v_fund_rms=(v_battery/2)*(4/pi)/sqrt(2) % for one phase
+v_fund_rms_linetoline=v_fund_rms*sqrt(3) % line to line voltage
+
+% https://www.youtube.com/watch?v=NaV7V07tEMQ
+% pole number is 4 and the phase number is 3.
+p=4;
+phase=3;
+
+
+
+
 
 
 
