@@ -3,6 +3,7 @@
 power_max = 270;                 % [kW] from project2
 torque_max = 440;                % [Nm] from project2
 speed_max = 225;                 % [km/sa] from project2
+m = 3;                           % [-] three phases
 p1 = 2;                          % [-] pole pair from Hendershot-FIU-Lecture
 power_rated = 288 * 0.746 ;      % [kW] from Hendershot-FIU-Lecture
 tire_diameter = 27.7 * 25.4;     % [mm] from 
