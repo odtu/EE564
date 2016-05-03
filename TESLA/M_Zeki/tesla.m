@@ -26,6 +26,10 @@ v_fund_rms_linetoline=v_fund_rms*sqrt(3) % line to line voltage
 % pole number is 4 and the phase number is 3.
 p=4;
 phase=3;
+f_max=motor_rpm*p/120;
+f_max=round(f_max)
+speed_nominal=90;
+f_operation=(speed_nominal/speed_max)*f_max
 
 
 
