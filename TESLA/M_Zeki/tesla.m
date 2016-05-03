@@ -20,7 +20,15 @@ motor_rpm=round(motor_rpm)
 %V_fundamental calculation
 v_battery=375 % V given
 v_fund_rms=(v_battery/2)*(4/pi)/sqrt(2) % for one phase
-v_fund_rms_linetoline=v_fund_rms*sqrt(3)
+v_fund_rms_linetoline=v_fund_rms*sqrt(3) % line to line voltage
+
+% https://www.youtube.com/watch?v=NaV7V07tEMQ
+% pole number is 4 and the phase number is 3.
+p=4;
+phase=3;
+
+
+
 
 
 
