@@ -233,6 +233,8 @@ Bcs_new = 1.45; % Tesla
 hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; % mm
 outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; % m
 
+Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
+
 
 %%
 % Rotor slots
@@ -250,9 +252,15 @@ btr = Bgap*rotor_slot_pitch/(KFE*Btrotor); % mm
 
 hor = 1; % mm
 bor = 3; % mm
-d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); % m
+d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); % mm
+d2 = d1/4; % mm
+hr = (d1-d2)/(2*tan(pi/Qr)); % mm
+rotor_slot_area = (pi/8)*(d1^2+d2^2)+(d1+d2)*hr/2; % mm^2
+Bcr = 1.65; % T
+hcr = 1e3*flux_per_pole/(2*length*Bcr); % mm
+Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); % mm
 
-
+Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
 
 % Dimensions
 
