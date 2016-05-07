@@ -64,11 +64,10 @@ vmax = 140; % km/h
 Trated = 7843; % Nm
 wheel_dia = 1.21; % m
 gear_ratio = 4.821;
+power_factor = 0.86; % assumed (not a given data)
+efficiency = 0.965; % assumed (not a given data)
 
-% power_factor = 0.86; % ?????
-% efficiency = 0.96;
 Nsync = 120*frated/pole;
-
 wrated = Nrated*2*pi/60; % rad/sec
 torque = Prated/wrated; % Nm
 % cmech is between 310 and 250
@@ -185,11 +184,76 @@ for k = 1:10
 end
 
 % In the book, 96,90,84 and 54 are suggested with one stator slot skew
-
-%qr = Qr/(pole*phase)
+% Table 7.5
+Qr = 90;
+qr = Qr/(pole*phase);
+% harmful synchronous torque at steady state
 
 
 %%
+% stator winding selection
+fmax = vmax/vrated*frated; % Hz
+% Normally, since the motor is to be driven by an inverter, the switching
+% frequency and corresponding harmonics should be taken into account for
+% skin effect. In this 1st iteration, only fundamental frequency will be
+% considered.
+Pin = Prated/efficiency; % watts
+Irated = Pin/(sqrt(3)*Vrated*power_factor); % amps
+% from awg wire table: AWG gauge starting from 000 is suitable considering
+% the frequency constraint (skin effect)
+% Select AWG wire gauge 000 which has a current rating of 239 amps
+wire_current = 239; % amps
+wire_diameter = 10.404; % mm
+stator_strand = ceil(Irated/wire_current);
+% three strands are required
+wire_area = (wire_diameter/2)^2*pi; % mm^2
+stator_current_density = Irated/wire_area; % A/mm^2
+% for a 6-pole machine, J = 7.76 is in the acceptable limits
+
+
+%%
+% Stator slot sizing
+stator_fill_factor = 0.44; % selected from the design example notes
+useful_slot_area = wire_area*stator_strand*zQ*stator_layer; % mm^2
+stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
+stator_stacking_factor = 0.96;
+Bteeth = 1.6; % Tesla
+stator_slot_thickness = 1e3*(Bgap*stator_slot_pitch)/(Bteeth*stator_stacking_factor); % mm
+Tus = stator_slot_pitch*1e-3; % mm 
+bts = stator_slot_thickness; % mm
+bos = 4; % mm
+hos = 2; % mm
+hw = 3; % mm
+bs1 = pi*(inner_diameter*1e3+2*hos+2*hw)/Qs-bts; % mm
+bs2 = sqrt(4*useful_slot_area*tan(pi/Qs)+bs1^2); % mm
+hs = 2*useful_slot_area/(bs1+bs2); % mm
+hcs = (1e3*outer_diameter-(1e3*inner_diameter+2*(hos+hw+hs)))/2; % mm
+Bcs = flux_per_pole/(2*length*hcs*1e-3); % T
+Bcs_new = 1.45; % Tesla
+hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; % mm
+outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; % m
+
+
+%%
+% Rotor slots
+KI = 0.8*power_factor+0.2;
+rotor_bar_current = KI*2*phase*Nph*kw1*Irated/Qr; % amps
+Jrotor = 6; % A/mm^2
+rotor_slot_area = rotor_bar_current/Jrotor; % mm^2
+end_ring_current = rotor_bar_current/(2*sin(2*pi/Qr)); % A
+Jer = 0.78*Jrotor; % A/mm^2
+end_ring_area = end_ring_current/Jer; % mm^2
+rotor_slot_pitch = pi*(1e3*inner_diameter-2*air_gap_distance)/Qr; % mm
+Btrotor = 1.6; % T
+KFE = stator_stacking_factor;
+btr = Bgap*rotor_slot_pitch/(KFE*Btrotor); % mm
+
+hor = 1; % mm
+bor = 3; % mm
+d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); % m
+
+
+
 % Dimensions
 
 %rotor_slot_number
