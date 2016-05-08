@@ -15,5 +15,5 @@ speed_rpm_max = (speed_max*10^3/3600)/(tire_diameter*10^-3/2)*(60/2*pi())*gear; 
 speed_rpm_rated = 6000;          % [rpm] from Hendershot-FIU-Lecture
                                  % approx. knee of the torque-speed curve  
 f1 = speed_rpm_rated*2*p1/120;   % [Hz] frequency of the driver unit
-            
-                                
+Vd = 400;                        % [V] nominal bus voltage 85kWh from 
+                                 % http://teslatap.com/undocumented/            
