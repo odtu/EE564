@@ -53,12 +53,16 @@ V=1350;
  q=4;
  Nr=1520;
  f=78;
- Nsyn=f/(p/2); % synchronous rotor speed in hertz
+ Nsyn=f/(pole/2); % synchronous rotor speed in hertz
  Tr=7843;
- Ns=120*f/(p);
+ Ns=120*f/(pole);
 s=(Ns-Nr)/Ns;
-efficiency=0.95; % Since January 1, 2015: The legally specified minimum efficiency IE3 must be maintained for power ratings from 7.5 kW to 375 kW or an IE2 motor plus frequency inverter. 
+efficiency=0.91; % Since January 1, 2015: The legally specified minimum efficiency IE3 must be maintained for power ratings from 7.5 kW to 375 kW or an IE2 motor plus frequency inverter. 
 power_factor=0.85;
+
+eff = imread('efficiency_table.png');
+figure;
+imshow(eff);
 
 % Define the magnetic loading and electric loading
 % 
@@ -75,20 +79,56 @@ power_factor=0.85;
 % Lots of iteration/optimization
 
 %% Main Dimension of Stator Core
-B=0.8 %Magneticloading
+
+cmec = imread('Cmech.png');
+figure;
+imshow(cmec);
+
 Cmec=350; 
 x=(pi*(pole_p^(1/3)))/pole;
 Din=((P/1000)/(Cmec*Nsyn*x))^(1/3); %m
 L=x*Din;  %m
+
+ratio = imread('Do_Di_ratio.png');
+figure;
+imshow(ratio);
+
 Dout=1.78*Din;
-pole_pitch=pi*Din/pole; %m
-slot_pitch=pole_pitch/(3*q);
 Qs=q*m*pole;
 Ftan=Tr/(Din/2);
 surface_area=pi*Din*L; %m^2
 sheer_stress=Ftan/surface_area; %N/m^2
+B=0.8 %Magneticloading
 electric_loading=sheer_stress/B;
-airgap=(0.1+0.012*(P^(1/3)))/1000; %m
+% airgap=1.6*(0.1+0.012*(P^(1/3)))/1000; %m
+
+% For converter driven motors airgap can be increased by 60 % to reduce rotor surface losses. (from the leture notes)
+airgap=1.6*(0.18+0.006*P^(0.4))
 
 %% Stator Winding
+
+slot_number = imread('stator and rotor slot number.png');
+figure;
+imshow(slot_number);
+
+Qs=q*m*pole;
+
+electrical_angle=(2*pi*pole_p)/Qs
+format rat
+electrical_angle_rad=electrical_angle/pi
+format short
+
+%%
+% Winding Factor
+%
+% Total winding factor (kw) consist of distribution factor (kd) and pitch
+% factor (kp). To eliminate 9.harmonik chording factor is selected 7/9
+chording_factor=7/9;
+Kd=sin(pi/(2*m))/(q*sin(pi/(2*m*q)));
+Kp=sin((pi/2)*chording_factor);   
+Kw=Kd*Kp;
+
+pole_pitch=pi*Din/pole; %m
+slot_pitch=pole_pitch/(3*q);
+%% Outputs
 
