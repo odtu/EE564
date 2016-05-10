@@ -130,5 +130,61 @@ Kw=Kd*Kp;
 
 pole_pitch=pi*Din/pole; %m
 slot_pitch=pole_pitch/(3*q);
+
+mag_flux= imread('magnetic_flux_value.png');
+figure;
+imshow(mag_flux);
+
+matris=[];
+
+for Bg=0.7:0.01:0.9
+
+% the lengthening of the machine caused by the edge field can be approximated by the equation l' ? l + 2?.
+Le=L+(2*airgap)/1000;
+area_of_one_pole=pi*Din*Le/pole;  %m^2
+
+%inductionmotors, both the stator and rotor teeth are saturated at the peak value of the flux density.
+% This leads to a higher reluctance of these teeth when compared with other teeth, and thus
+% ?i takes notably higher values than the value corresponding to a sinusoidal distribution. The
+% factor ?i (2/pi)has to be iterated gradually to the correct value during the design process. The value
+% ?i = 0.64 of an unsaturated machine can be employed as an initial value, unless it is known
+% at the very beginning of the design process that the aim is to design a strongly saturating machine,
+% in which case a higher initial value can be selected.
+
+fundamental_magnetic_flux=(2/pi)*Bg*Le*area_of_one_pole; %Wb
+flux=pole_pitch*Le*Bg
+alfa_u=pole*pi/Qs
+
+format rat
+alfa_u_rad=alfa_u/pi
+format short
+
+%from the E=4.44*f*N*kw*magnetic_flux we can find turn number
+
+N=(V/3^(1/3))/(4.44*Kw*f*fundamental_magnetic_flux);
+
+conductor_per_slot=N/(pole_p*q);
+number_of_conductor_per_slot=ceil(conductor_per_slot);
+
+N_new=number_of_conductor_per_slot*pole_p*q
+
+Bg_new=Bg*(N/N_new)
+    matris=[matris Bg_new]
+
+if Bg_new>0.7
+    break; 
+end
+
+end
+
+Irated=P/(efficiency*power_factor*V*3^(1/3));
+
+% J=5-8 A/mm^2 for 2p=6,8
+
+J=7;
+
+Ac=Irated/J;
+d_copper=sqrt(4*Ac/pi)
+
 %% Outputs
 
