@@ -163,6 +163,7 @@ format short
 
 N=(V/3^(1/3))/(4.44*Kw*f*fundamental_magnetic_flux);
 
+a1=1  %number of current path in parallel
 conductor_per_slot=N/(pole_p*q);
 number_of_conductor_per_slot=ceil(conductor_per_slot);
 
@@ -184,7 +185,19 @@ Irated=P/(efficiency*power_factor*V*3^(1/3));
 J=7;
 
 Ac=Irated/J;
-d_copper=sqrt(4*Ac/pi)
+d_copper=sqrt(4*Ac/pi);
+
+% because of the skin effect we use paralel conductors. 
+parallel_branch=12;
+
+d_copper_new=sqrt(4*Ac/(pi*parallel_branch)); % after recalculated diameter of the wire 
+% awg#11 is enough for size
+awg_size=[107,85,67.4,53.5 42.4,33.6,26.7,21.2,16.8,13.3,10.6,8.37,6.63,5.26,4.17,3.31,2.63,2.08,1.65,1.31,1.04,0.82,0.653,0.518]%tablo
+fark=d_copper_new-awg_size% fark dizisi
+[minimum,indis]=min(farklar)% farklarýn en yakinireferansa en yaki
+deger=awg_size(indis)
+
+
 
 %% Outputs
 
