@@ -17,3 +17,4 @@ speed_rpm_rated = 6000;          % [rpm] from Hendershot-FIU-Lecture
 f1 = speed_rpm_rated*2*p1/120;   % [Hz] frequency of the driver unit
 Vd = 400;                        % [V] nominal bus voltage 85kWh from 
                                  % http://teslatap.com/undocumented/            
+u0 = 4*pi*10^-7;                 % [-]  

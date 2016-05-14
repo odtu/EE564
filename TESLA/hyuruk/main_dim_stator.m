@@ -1,4 +1,4 @@
-% Based on the The Induction Machine Handbook Chpater 14 & 15
+% Based on the The Induction Machine Handbook Chapter 14 & 15
 neff = 0.96;             % [-] targetted efficiency (IE3)
 pwr_factor = 0.88;       % [-] typ. power factor for induction motors 
                          % at full load varies between 0.85-0.90
@@ -19,7 +19,7 @@ Cmech = power_max / (Dis^2*L*f1/p1); % [kWs/m^3] specific machine constant
 max_stator_num = round(pi()*Dis/0.007); % [-] max. stator number from 
                                         % ee564_basic_machine_design2, 8/23 
 min_stator_num = ceil(pi()*Dis/0.045);  % [-] min. stator number
-Kd = 0.62;                % [-] for 2p1 pole number (Table 15.2)
+Kd = 0.63;                % [-] for 2p1 pole number (Table 15.2)
 Dout = Dis / Kd;          % [m] outer diameter of the stator (eq. 15.4)
 g1 = 0.1+0.012*(power_rated*10^3)^(1/3); %[mm] airgap (eq. 15.5)
 g2 = 0.18+0.006*(power_rated*10^3)^(0.4);%[mm] airgap from
