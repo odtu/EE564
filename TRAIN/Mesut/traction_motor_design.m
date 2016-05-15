@@ -204,6 +204,9 @@ new_Cmech = Prated*1e-3/(inner_diameter^2*new_length*fsync); % kWs/m^3
 new_magnetic_loading = new_Bgap; % Tesla
 new_electric_loading = new_tan_stress/new_magnetic_loading*1e-3; % kA/m
 
+Bgap = new_Bgap; % Tesl
+flux_per_pole = Bgap*4*inner_radius*new_length/pole;
+
 
 %%
 % Rotor slot number
@@ -245,25 +248,32 @@ wire_area = (wire_diameter/2)^2*pi; % mm^2
 stator_current_density = Irated/wire_area; % A/mm^2
 % for a 6-pole machine, J = 7.76 is in the acceptable limits
 
+% With this current density, forced air cooling will be sufficienct
+
 
 %%
 % Stator slot sizing
 stator_fill_factor = 0.44; % selected from the design example notes
 useful_slot_area = wire_area*stator_strand*zQ*stator_layer; % mm^2
-stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
-stator_stacking_factor = 0.96;
-Bteeth = 1.6; % Tesla
-stator_slot_thickness = 1e3*(Bgap*stator_slot_pitch)/(Bteeth*stator_stacking_factor); % mm
-Tus = stator_slot_pitch*1e-3; % mm 
-bts = stator_slot_thickness; % mm
+%stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
+stator_stacking_factor = 0.96; % design example
+Kfe = stator_stacking_factor;
+Tus = stator_slot_pitch*1e3; % mm 
+bts = (Bgap*Tus)/(Bstooth*Kfe); % mm
+
+% Select the other parameters:
 bos = 4; % mm
 hos = 2; % mm
 hw = 3; % mm
+
 bs1 = pi*(inner_diameter*1e3+2*hos+2*hw)/Qs-bts; % mm
 bs2 = sqrt(4*useful_slot_area*tan(pi/Qs)+bs1^2); % mm
 hs = 2*useful_slot_area/(bs1+bs2); % mm
 hcs = (1e3*outer_diameter-(1e3*inner_diameter+2*(hos+hw+hs)))/2; % mm
-Bcs = flux_per_pole/(2*length*hcs*1e-3); % T
+
+Bcs = flux_per_pole/(2*new_length*hcs*1e-3); % T
+% The resultant yoke flux density is too low. Decrease outer diameter and
+% so that decrease hcs:
 Bcs_new = 1.45; % Tesla
 hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; % mm
 outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; % m
@@ -272,7 +282,7 @@ Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
 
 
 %%
-% Rotor slots
+% Rotor slot sizing
 KI = 0.8*power_factor+0.2;
 rotor_bar_current = KI*2*phase*Nph*kw1*Irated/Qr; % amps
 Jrotor = 6; % A/mm^2
