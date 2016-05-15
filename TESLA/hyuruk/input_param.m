@@ -11,7 +11,8 @@ tire_diameter = 27.7 * 25.4;     % [mm] from
                                  % https://tiresize.com/tiresizes/245-45R19.htm
 gear = 9.73;                     % [-] 9.73:1 (transmission) from 
                                  % https://en.wikipedia.org/wiki/Tesla_Model_S
-speed_rpm_max = (speed_max*10^3/3600)/(tire_diameter*10^-3/2)*(60/2*pi())*gear; % [rpm}
+speed_rpm_max = (speed_max*10^3/3600)/(tire_diameter*10^-3/2)*(60/2*pi())*gear; 
+                                 % [rpm}
 speed_rpm_rated = 6000;          % [rpm] from Hendershot-FIU-Lecture
                                  % approx. knee of the torque-speed curve  
 f1 = speed_rpm_rated*2*p1/120;   % [Hz] frequency of the driver unit
