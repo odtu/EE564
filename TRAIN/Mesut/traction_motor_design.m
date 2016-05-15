@@ -50,6 +50,7 @@
 %%
 % Maximum winding temp: 200 degree C
 
+
 %%
 % Design Inputs
 Prated = 1280e3; % watts
@@ -67,10 +68,14 @@ gear_ratio = 4.821;
 power_factor = 0.86; % assumed (not a given data)
 efficiency = 0.965; % assumed (not a given data)
 
-Nsync = 120*frated/pole;
+
+%%
+% Main dimensions: length, diameter, electrical and magnetic loading
+Nsync = 120*frated/pole; % rpm
 wrated = Nrated*2*pi/60; % rad/sec
 torque = Prated/wrated; % Nm
-% cmech is between 310 and 250
+% Cmech is between 310 and 250 from graph
+% choose Cmech = 300
 Cmech = 300; % kWs/m^3
 fsync = 2*frated/pole; % Hz
 d2l = Prated*1e-3/(Cmech*fsync); % m^3
@@ -103,11 +108,14 @@ surface_area = pi*inner_diameter*length; % m^2
 inner_volume = inner_diameter^2*length*pi/4; % m^3
 circumference = pi*inner_diameter; % m
 
+
 %%
 % Check
 Ftan = torque/inner_radius; % N
 tan_stress = Ftan/surface_area; % p
 Cmech = Prated*1e-3/(inner_diameter^2*length*fsync); % kWs/m^3
+electric_loading = tan_stress/magnetic_loading*1e-3; % kA/m
+
 
 %%
 % Slot number selection:
@@ -124,8 +132,8 @@ for k = 1:10
     end
 end
 
-% Select Qs = 72 for the first iteration
-Qs = 72;
+% Select Qs = 90 for the first iteration
+Qs = 90;
 qs = Qs/(pole*phase);
 stator_slot_pitch = circumference/Qs; % m
 
@@ -135,13 +143,14 @@ stator_layer = 2;
 pitch_angle = 4*pi/5; % radians electrical
 slot_angle = pi/qs/phase; % radians electrical
 
+
 %%
 % Stator winding factor (fundamental)
-
 [kd,kp,kw] = winding_factor_calc(slot_angle,qs,pitch_angle);
 kd1 = kd(1);
 kp1 = kp(1);
 kw1 = kw(1);
+
 
 %%
 % selected flux densities (book, page: 283)
@@ -151,23 +160,49 @@ Bstooth = 1.9; % T
 Bryoke = 1.6; % T
 Brtooth = 2.0; % T
 
+
 %%
 % stator slot current
 Iu = stator_slot_pitch*electric_loading*1000; % amps
 % number of turns per phase
-Erms = Vrated/sqrt(2); % volts
+Erms = Vrated/sqrt(3); % volts
 flux_per_pole = 4*inner_radius*length*Bgap/pole; % weber
 Nph = Erms/(4.44*frated*flux_per_pole*kw1);
-Nph_min = qs*pole*stator_layer/2;
-% if 24 turns per phase is used, either of l,r or Bgap should be increased
-% if 48 turns per phase is used, either of l,r or Bgap should be decreased
-% in the first design, Nph = 48 is selected
-Nph = 48; % turns
-flux_per_pole = Erms/(4.44*frated*Nph*kw1);
-Bgap = flux_per_pole*pole/(4*inner_radius*length); % weber
 
-% stator number of turns per slot
+% number of turns/soil side
+for k = 1:5
+    zQ = k;
+    pos_Nph = qs*pole*stator_layer*zQ/2;
+    fprintf('Possible Nph = %d, zQ = %d\n',pos_Nph,k);
+end
+
+% Among the alternatives, the closest turn number is 30 with zQ = 1
+% if 30 turns per phase is used, either of l,r or Bgap should be increased
+% if 60 turns per phase is used, either of l,r or Bgap should be decreased
+% in the first design, Nph = 30 is selected
+
+Nph = 30;
+% stator number of turns/coil side
 zQ = 2*Nph/(qs*pole*stator_layer); % turns
+
+flux_per_pole = Erms/(4.44*frated*Nph*kw1); % weber
+Bgap = flux_per_pole*pole/(4*inner_radius*length); % Tesla
+
+% The resultant Bgap is a little bit higher (0.9143 Tesla).
+% To decrease it, radius or length should be increased.
+selected_Bgap = 0.9; % Tesla
+
+rl_multip_old = inner_radius*length; % m^2
+rl_multip = Erms*pole/(4.44*Nph*frated*kw1*4*selected_Bgap); % m^2
+
+new_length = 0.46; % m
+new_Bgap = Erms*pole/(4.44*Nph*frated*kw1*4*new_length*inner_radius); % Tesla
+new_surface_area = pi*inner_diameter*new_length; % m^2
+new_inner_volume = inner_diameter^2*new_length*pi/4; % m^3
+new_tan_stress = Ftan/new_surface_area; % p
+new_Cmech = Prated*1e-3/(inner_diameter^2*new_length*fsync); % kWs/m^3
+new_magnetic_loading = new_Bgap; % Tesla
+new_electric_loading = new_tan_stress/new_magnetic_loading*1e-3; % kA/m
 
 
 %%
@@ -185,13 +220,13 @@ end
 
 % In the book, 96,90,84 and 54 are suggested with one stator slot skew
 % Table 7.5
-Qr = 90;
+Qr = 72;
 qr = Qr/(pole*phase);
 % harmful synchronous torque at steady state
 
 
 %%
-% stator winding selection
+% Stator winding selection
 fmax = vmax/vrated*frated; % Hz
 % Normally, since the motor is to be driven by an inverter, the switching
 % frequency and corresponding harmonics should be taken into account for
@@ -261,6 +296,4 @@ hcr = 1e3*flux_per_pole/(2*length*Bcr); % mm
 Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); % mm
 
 Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
-
-
 
