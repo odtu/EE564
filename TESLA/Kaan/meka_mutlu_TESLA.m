@@ -35,11 +35,15 @@ Spd_rpm_max = 21848; %[RPM]
 % If we assume average speed is 85 km/h. Then rated RPM value of motor will
 % be 7960 RPM.
 Spd_rpm_rated = 7960; %[RPM]
-f_rated = Spd_rpm_rated*p/60;
+f_rated = round(Spd_rpm_rated*p/60);
+fprintf('In this case supply frequency will be %d Hz.',f_rated)
 %%
-%  
 % * *Number of phases:* 3
-% * *Line supply voltage:* 320 V
+m = 3;
+%%
+% * *Line supply voltage:* 400 V
+Vline = 400;
+%%
 % * *Rated Power:* 185 kW
 Prated = 185*10^3; % [W]
 
@@ -55,7 +59,7 @@ Prated = 185*10^3; % [W]
 %  
 % To be able to calculate $D_{is}$, airgap power is needed.
 Aimed_eff = 0.95;
-Aimed_pf = 0.85;
+Aimed_pf = 0.89;
 fprintf('At this point targeted efficiency is taken as %2.0f %%.',Aimed_eff*100)
 %% 
 fprintf('Power factor is taken as %0.2f %.',Aimed_pf)
@@ -129,9 +133,9 @@ fprintf('Pole pitch is %2.2f cm.',pole_pitch*100)
 % <<Dout_ratio.PNG>>
 % 
 % It gives us information about ratio of internal and external stator
-% diameters. For 4 poles this ratio will be taken as 0.62.
+% diameters. For 4 poles this ratio will be taken as 0.61.
 
-Kd = 0.62;
+Kd = 0.61;
 Dout = Dis / Kd;
 fprintf('External diameter of stator is calculated as %2.3f cm.',Dout*100)
 %%
@@ -164,11 +168,157 @@ fprintf('For being realistic it is going to be taken as %0.2f mm.',g*1000)
 %% The Stator Winding
 
 %%
+% Following James Hendershot's lecture notes, for 4 poles and 185 kW of
+% rated power Stator slot number will be selected. Our rated power is
+% nearly 250 HP and from table below, it is advised to choose 58 stator
+% slots for our case.
+%  
+% <<Ns.PNG>>
+%  
+% Here we should remember that the total number of slots per stator should
+% be divisible by the number of phases. So it should be a number that is
+% multiple of 3.
+%  
+% $q = \frac{N_s}{2pm}$ 
+%  
+% If we think about its formula above (taken from book; 4.7), it is 
+% possible to see that choosing Ns/m integer doesn't guarantee that q is 
+% an integer. In fact it doesn't have to be an integer and may be selected 
+% as a fraction. But in most induction machines, q is an integer to 
+% provide complete (pole to pole) symmetry for the winding. So in our case 
+% Ns must be multiple of 2pm=12. Advised number is 58, so Ns would be taken 
+% as 60. It was tried and seen that number of conductors, flux density and 
+% other parameteres don't meet the expectations. So it is going to be taken
+% as 48.
+Ns = 48;
+q = Ns/(2*p*m);
+fprintf('Number of slots per pole per phase is %d .',q)
+%%
+% Now we should decide pitch factor. It can be selected as 5/6 to reduce
+% 5th harmonic and reduce 7th harmonics. So two layered winding  with 
+% chorded coils will be used.
+pitch_factor = 5/6;
+ang_pitch = pitch_factor*180; % [degree]
+ang_pitch_rad = pitch_factor*pi; % [radian]
+fprintf('Selected pitch angle is %d degree .',ang_pitch)
+%%
+% It is possible to calculate the electrical angle between emfs in 
+% neighboring slots $\alpha_{ec}$
+%  
+% $\alpha_{ec}=\frac{2 \pi p}{N_s}$
+ang_electrcl_rad = 2*pi*p/Ns;
+ang_electrcl_deg = ang_electrcl_rad/pi*180;
+fprintf('It is %0.3f radian means %d degree.',ang_electrcl_rad,ang_electrcl_deg)
+%%
+% Now we can calculate pitch factor. Due to chorded coils of stator,induced 
+% voltage will drop but by means of harmonics we will have better results.
+%  
+% $k_p = sin(\frac{\lambda}{2})$
+%  
+kp = sin(ang_pitch_rad/2);
+fprintf('Pitch factor is calculated as %0.2f .',kp)
+%%
+% Using formula below it is possible to calculate distribution factor.
+%  
+% $k_d = \frac{sin(q\frac{\alpha}{2})}{qsin\frac{\alpha}{2}}$
+%  
+kd = sin(q*ang_electrcl_rad/2)/(q*sin(ang_electrcl_rad/2));
+fprintf('Distribution factor is calculated as %0.2f .',kd)
+%%
+% Multiplicaiton of distribution and pitch factors are called as winding
+% factor.
+kw = kp * kd;
+fprintf('Winding factor is calculated as %0.2f .',kw)
+%%
+% Using recommended intervals given in 15.11, it is possible to select the
+% airgap flux density. For 4 poles suggested interval is 0.65 to 0.78
+% Tesla. To decrease iron losses minimum of this interval will be taken as
+% airgap flux density.
+Bg = 0.7 %[T]
+%%
+% The pole coefficient $\alpha_i$ and form factor Kf depend on the tooth 
+% saturation factor 1+Kst. If 1+Kst is taken as 1.4 than Kst is 0.4.
+Kst = 0.4;
+%%
+% Using this value and graph below, it is possible to select form factor
+% and flux density shape factor.
+%  
+% <<kf_alphai.PNG>>
+%  
+alpha_i = 0.729;
+kf = 1.085;
+fprintf('Form factor is selected as %1.3f .',kf)
+%%
+fprintf('Flux density shape factor is selected as %0.3f .',alpha_i)
+%%
+% Using these coefficients it is possible to calculate pole flux.
+%  
+% $\phi = \alpha_i \tau L B_g$
 % 
+pole_flux=alpha_i*pole_pitch*L*Bg; % [Wb]
+fprintf('Pole flux is calculated as %1.3f mWb.',pole_flux*1000)
+%%
+% The number of per phase can be calculated using formula below given with
+% (15.12).
+%  
+% $N_{ph} = \frac{K_EV_{ph}}{4K_fK_wf\phi}$
+% 
+Nph = Ke*(Vline/(sqrt(2)))/(4*kf*kw*f_rated*pole_flux);
+fprintf('The number of turns per phase is calculated as %3.1f turns/phase.',Nph)
+%%
+% The number of conductors per slot ns can be calculated using formula
+% below:
+%  
+% $n_s = \frac{a_1N_{ph}}{p_1q}$
+%  
+% Here a1 ise the number of current paths in parallel and will be taken as
+% 1 for our case.
+ns = Nph/(p*q);
+fprintf('It is calculated as %1.2f .',ns)
+%%
+% It should be an even number as there are two distinct coils per slot in a
+% double layer winding. So ns is selected as 2.
+ns = 2;
+%%
+% If we turn back and recalculate the actual airgap flux density:
+Bg = Bg*Nph/(ns*p*q);
+fprintf('Recalculated airgap flux density is %1.3f T .',Bg)
+%%
+% Now we can calculate rated current. 15.16 formula will be used:
+%  
+% $I_{in} = \frac{P_n}{\eta cos\phi_n \sqrt{3}V_1}$
+Iin_rated = Prated/(Aimed_eff*Aimed_pf*sqrt(3)*Vline);
+fprintf('Rated phase current is calculated as %3.1f A .',Iin_rated)
+%% 
+% To be able to calculate wire cross section, current density will be
+% selected first. Here, recommendation 15.17 will be followed and for 4
+% poles current density will be taken as 6 A/mm^2.
+Jcos = 6;
+%%
+% 
+% $A_{co} = \frac{I_{in}}{J_{cos}}$
+Aco = Iin_rated/Jcos; % [mm^2]
+fprintf('Magnetic cross section area is calculated as %3.2f mm^2.',Aco)
+%%
+% Using cross-sectional wire area information it is possible to calculate
+% the diameter wire gauge.
+%  
+% $d_{co} = \sqrt{\frac{4A_{co}}{\pi}}$
+%  
+dco = sqrt(4*Aco/pi); %[mm]S
+fprintf('Wire gauge diameter is %3.2f mm.',dco)
+%%
+% Because this diameter is not small, 30 conductors will be paralleled to
+% decrase the diameter of each conductor.
+ap = 30;
+dco = sqrt(4*Aco/(ap*pi)); %[mm]S
+fprintf('New wire gauge diameter is %3.2f mm.',dco)
+%%
+% By using table 15.3, it is possible to jump from wire diameter to
+% insulated wire diameter.
+dco_ins = 1.53*10^-3; % [m]
+fprintf('Insulated wire gauge diameter is %3.2f mm.',dco_ins*10^3)
+%% Stator Slot Sizing
 
-
-
-
- 
 %% 
 end
