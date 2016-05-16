@@ -329,7 +329,12 @@ b1 = bs1; % mm
 k = (b1/g)/(5+b1/g);
 be = k*b1; % mm
 kcs = Tus/(Tus-be);
-geff = g*kcs; % mm
+
+k = (d1/g)/(5+d1/g);
+be = k*d1; % mm
+kcr = Tur/(Tur-be);
+
+geff = g*kcs*kcr; % mm
 
 
 %%
@@ -348,10 +353,20 @@ Imag = Vphase/Xm; % amps
 
 
 %%
-% Leakage inductance
-P1 = u0*eqv_length*((hos/bos)+(hs/(3*bs2)));
-Lph = P1*4*Nph^2*phase/Qs; % Henries
+% Stator Leakage inductance
+P1 = u0*eqv_length*((hos/bos)+(hs/(3*bs2))); % permeance
+Lph = P1*4*(Nph*kw1)^2*phase/Qs; % Henries
 Xph = 2*pi*frated*Lph; % ohms
+
+
+%%
+% Rotor Leakage inductance
+Pr = 0.66 + 2*hr/(3*(d1+d2)) + hor/bor; % permeance
+Pdr = 0.9*Tur/(kcs*g)*1e-2; % permeance
+Kx = 1; % skin effect coefficient
+P2 = u0*eqv_length*(Kx*Pr+Pdr); % permeance
+Lrp = P2*4*(Nph*kw1)^2*phase/Qr; % Henries
+Xrp = 2*pi*frated*Lrp; % ohms
 
 
 %%
@@ -395,6 +410,7 @@ Zbase = Vrated^2/Sbase; % ohms
 % pu values
 Xm_pu = 100*Xm/Zbase; % percent
 Xph_pu = 100*Xph/Zbase; % percent
+Xrp_pu = 100*Xrp/Zbase; % percent
 Rph_pu = 100*Rph/Zbase; % percent
 R2p_pu = 100*R2p/Zbase; % percent
 
@@ -402,6 +418,46 @@ R2p_pu = 100*R2p/Zbase; % percent
 %%
 % Copper Losses
 Pcus = 3*Irated^2*Rph; % watts
+Pcur = 3*Irated^2*R2p; % watts
+Pcu = Pcus + Pcur; % watts
+
+
+%% Core losses
+% stator teeth weight
+density_iron = 7800; % kg/m^3
+Gsteeth = density_iron*Qs*bts*1e-3*(hs+hw+hos)*1e-3*length*Kfe; % kg
+% stator fundamental teeth core loss
+Kt = 1.7;
+p10 = 2;
+Pc_stator_teeth1 = Kt*p10*(frated/50)^1.3*Bstooth^1.7*Gsteeth; % watts
+% stator back iron weight
+Gsyoke = density_iron*pi/4*(outer_diameter_new^2-(outer_diameter_new-2*hcs*1e-3)^2)*length*Kfe; % kg
+% stator fundamental back iron core loss
+Ky = 1.6;
+Pc_stator_yoke1 = Ky*p10*(frated/50)^1.3*Bsyoke^1.7*Gsyoke; % watts
+% stator total core loss (fundamental)
+Pcs1 = Pc_stator_teeth1+Pc_stator_yoke1; % watts
+
+% rotor teeth weight
+Grteeth = density_iron*Qr*btr*1e-3*(hr+(d1+d2)/2)*1e-3*length*Kfe; % kg
+% stray losses
+Kps = 1/(2.2-Bstooth);
+Kpr = 1/(2.2-Brtooth);
+Bps = (kcs-1)*Bgap; % Tesla
+Bpr = (kcr-1)*Bgap; % Tesla
+Piron_s = 0.5*1e-4*(Gsteeth*(Qr*frated/pole_pair*Kps*Bps)^2 + Grteeth*(Qs*frated/pole_pair*Kpr*Bpr)^2); % watts
+
+%Pc = Pcs1 + Piron_s; % watts
+Pc = Pcs1; % watts
+
+
+%% Other losses
+Pfw = 0.008*Prated; % watts
+
+
+%% Efficiency
+Ptotal = Pcu + Pc + Pfw; % watts
+efficiency = Prated/(Ptotal+Prated);
 
 
 %%
