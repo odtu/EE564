@@ -117,14 +117,14 @@ fprintf('For realistic dimensions it is going to be taken as %2.1f cm.',Dis*100)
 L = stck_asp_ratio*pi*Dis/(2*p);
 fprintf('Stack length L is %2.2f cm.',L*100)
 %%
-L = (ceil(L*1000))/1000;
+L = (ceil(L*1000))/1000; %[m]
 fprintf('For being realistic it is going to be taken as %2.1f cm.',L*100)
 %%
 % By using equation 14.14 it is possible to calculate the pole pitch:
 %  
 % $\tau = \frac{\pi D_{is}}{2p}$
 
-pole_pitch = pi*Dis/(2*p);
+pole_pitch = pi*Dis/(2*p); %[m]
 fprintf('Pole pitch is %2.2f cm.',pole_pitch*100)
 %%
 % Next step is deciding external stator diameter. For its calculation,
@@ -234,7 +234,7 @@ fprintf('Winding factor is calculated as %0.2f .',kw)
 % airgap flux density. For 4 poles suggested interval is 0.65 to 0.78
 % Tesla. To decrease iron losses minimum of this interval will be taken as
 % airgap flux density.
-Bg = 0.7 %[T]
+Bg = 0.7; %[T]
 %%
 % The pole coefficient $\alpha_i$ and form factor Kf depend on the tooth 
 % saturation factor 1+Kst. If 1+Kst is taken as 1.4 than Kst is 0.4.
@@ -321,4 +321,170 @@ fprintf('Insulated wire gauge diameter is %3.2f mm.',dco_ins*10^3)
 %% Stator Slot Sizing
 
 %% 
+% Since we know wire diameter, number of conductors in parallel and number
+% of turns per slot, it is possible for us to calculate the slot area. Only
+% missing parameter is fill factor selection. For round wire and at our
+% rated power level it is advised to be taken between 0.4 and 0.44. So it
+% is selected as 0.44. For useful area calculation formula (15.21) will be
+% used:
+%  
+% $A_{su} = \frac{\pi d_{co}^{2} a_p n_s}{4K_{fill}}$
+%  
+Kfill = 0.44;
+A_slot = pi*(dco^2)*ap*ns/(4*Kfill); %[mm^2]
+fprintf('Calculated useful slot area is %3.3f mm^2.',A_slot)
+%%
+% There are two recommended stator slot shapes in the book as follows:
+%  
+% <<stator_slot_shape.PNG>>
+%  
+% For ease of calculation and to be able to use explained slot geometry,
+% left-hand side of stator slot shape is selected.
+%  
+% For this shape, explained lengths and are as in the figure below:
+%  
+% <<selected_slot_shape.PNG>>
+%  
+% Here, some parameters will be selected via following books' suggestions
+% and some of them will be calculated.
+%  
+% Suggested variables are bos, hos and hw. bos can be defined as slot
+% opening length and it is selected as 2 mm. hos is the height of slot
+% opening and it is taken as 1 mm. hw is wedge height and it is selected
+% as 3 mm.
+b_os = 2*10^-3; %[m]
+h_os = 10^-3; %[m]
+h_w = 3*10^-3; %[m]
+%%
+% Assuming that all the airgap flux passes through stator teeth:
+% 
+% $B_g \tau_s L \approx B_{ts} b_{ts} L K_{Fe}$
+%%
+% Here, Kfe is a constant to include lamination insulation's effect and 
+% suggested to be defined as 0.96. It is suggested to have a tooth flux 
+% density between 1.5 and 1.65 T. Let us take it as 1.6 T and determine bts:
+Kfe = 0.96;
+B_ts = 1.6;
+%%
+% Slot pitch isn't calculated yet, it is possible to use equation (15.3)
+% for it.
+%  
+% $\tau_s = \frac{\tau}{3q}$
+slot_pitch = pole_pitch/(3*q);
+fprintf('Slot pitch is %3.3f mm.',slot_pitch*1000)
+%%
+b_ts = Bg*slot_pitch/(B_ts*Kfe); %[m]
+fprintf('Tooth width is %3.3f mm.',b_ts*1000)
+%%
+b_ts = (floor(b_ts*10000))/10000;
+fprintf('It is better to take it as %1.1f mm.',b_ts*1000)
+%% 
+% For this value let us recalculate flux density of tooth:
+Bts = Bg*slot_pitch/(b_ts*Kfe); %[m]
+fprintf('Recalculated tooth-flux density is %1.2f Tesla.',Bts)
+%%
+% This value is still inside the suggested range.
+%  
+% With the variables we know, using equation (15.23) it is possible to
+% calculate the slot lower width:
+%  
+% $b_{s1} = \frac{\pi (D_{is} + 2h_{os} +2h_w)}{N_s} - b_{ts}$
+% 
+b_s1 = (pi*(Dis + 2*h_os + 2*h_w))/Ns - b_ts;
+b_s1 = (round(b_s1*10000))/10000;
+fprintf('Lower slot width is %1.1f mm.',b_s1*1000)
+%%
+% At this point missing variables are slot height and upper slow width. If
+% slot area's round corners are ignored and area is taken as a trapezoid,
+% its are would be;
+%  
+% $A_{su} = h_s\frac{b_{s1} + b_{s2}}{2}$
+%  
+% Also, we have(15.25) formula as follows:
+%  
+% $b_{s2} \approx b_{s1} +2h_stan\frac{\pi}{N_s}$
+%  
+% From these 2 equations;
+%  
+% $b_{s2} = \sqrt{4A_{su}tan\frac{\pi}{N_s} + b_{s1}^{2}}$
+b_s2 = sqrt(4*A_slot*(10^-6)*tan(pi/Ns)+(b_s1^2));
+b_s2 = (round(b_s2*10000))/10000;
+fprintf('Upper slot width is %1.1f mm.',b_s2*1000)
+%%
+% 
+% $h_s = \frac{2A_{su}}{b_{s1} + b_{s2}}$
+hs = 2*A_slot*(10^-6)/(b_s1+b_s2);
+hs = (round(hs*10000))/10000;
+fprintf('Slot height is %1.1f mm.',hs*1000)
+%%
+% Now we can proceed in calculating mmf of airgap and teeth. The airgap mmf
+% is:
+%  
+% $F_{mg} \approx K_c*g*\frac{B_g}{\mu_0}$
+%  
+% Here, Kc is the Carter's cofficient and it helps us to consider airgap
+% surface as smooth and make our calculations directly. It is expected that 
+% it is greater but close to 1; its formula is:
+%  
+% $K_c = \frac{\tau_s}{\tau_s-b_e}$
+%  
+% $b_e = Kb_{os}$
+%  
+% $K = \frac{\frac{b_{os}}{g}}{5 + \frac{b_{os}}{g}}$
+K = (b_os/g)/(5+b_os/g);
+be = K*b_os;
+Kc = slot_pitch/(slot_pitch-be);
+fprintf('Carter coefficient is calculated as %1.2f .',Kc)
+%%
+% Now airgap mmf may be calculated:
+mu_0 = 4*pi*10^-7;
+F_mg = Kc*g*Bg/mu_0;
+fprintf('The airgap mmf is %3.3f Aturns.',F_mg)
+%%
+% Using tooth flux density and tooth's related heights we may calculate
+% also mmf of stator tooth. Its formula is given with (15.30) and as
+% follows:
+%  
+% $F_{mts} = H_{ts}(h_s + h_{os} + h_w)$
+%  
+% Only missing parameter is H of stator tooth and its value will be taken
+% from table 15.4 of lamination magnetization curve.
+Hts = 2960; %[A/m]
+fprintf('H of stator tooth is selected as %d A/m for %1.2f Tesla.',Hts,Bts)
+%%
+F_mts = Hts*(hs + h_os + h_w);
+fprintf('So the stator tooth mmf is %3.3f Aturns.',F_mts)
+%%
+% Using formula given in (15.29) it is possible to calculate rotor tooth
+% mmf since we take 1 + Kst value as 1.4 at the earlier part of design.
+%  
+% $1+K_{st} = 1 + \frac{F_{mts} + F_{mtr}}{F_{mg}}$
+F_mtr =(Kst*F_mg)-F_mts;
+fprintf('Rotor tooth mmf is found as %3.3f Aturns.',F_mtr)
+%%
+% As this value is only slightly larger than that of stator tooth, we may
+% go on with the design process.
+%  
+% Only missing dimension for stator side is its back core and this value
+% may be calculated with the formula below (15.32):
+%  
+% $h_{cs} = \frac{D_{out} - (D_{is} + 2(h_s + h_{os} + h_w))}{2}$
+h_cs = (Dout -(Dis+2*(hs + h_os + h_w)))/2;
+fprintf('Back core is calculated as %1.1f cm.',h_cs*100)
+%%
+% Here, we should take a look at to the flux density to avoid a saturation.
+%  
+% $B_{cs} = \frac{\phi}{2Lh_{cs}}$
+B_cs = pole_flux/(2*L*h_cs);
+fprintf('Back core flux density is %1.2f Tesla.',B_cs)
+%%
+% This is an acceptable value, therefore outer diameter won't be changed.
+%% Rotor Slots
+
+%% 
+% 
+
+
+
+
 end
