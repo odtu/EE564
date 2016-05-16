@@ -422,6 +422,28 @@ Pcur = 3*Irated^2*R2p; % watts
 Pcu = Pcus + Pcur; % watts
 
 
+%%
+% Copper mass
+copper_area = (1e-6*wire_area*stator_strand); % m^2
+copper_length = phase*le*Nph; % m
+copper_volume = copper_area*copper_length; % m^3
+copper_density = 8.96; % gr/cm^3
+copper_density = copper_density*1e3; % kg/m^3
+copper_mass = copper_density*copper_volume; % kg
+
+
+%%
+% Aluminium mass
+aluminium_area1 = (1e-6*Ab); % m^2
+aluminium_area2 = (1e-6*Aer); % m^2
+aluminium_length1 = Qr*length; % m
+aluminium_length2 = Qr*ler; % m
+aluminium_volume = aluminium_area1*aluminium_length1 + aluminium_area2*aluminium_length2; % m^3
+aluminium_density = 2.70; % gr/cm^3
+aluminium_density = aluminium_density*1e3; % kg/m^3
+aluminium_mass = aluminium_density*aluminium_volume; % kg
+
+
 %% Core losses
 % stator teeth weight
 density_iron = 7800; % kg/m^3
