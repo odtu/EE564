@@ -609,11 +609,11 @@ fprintf('Previous calculation was %3.3f and it is acceptable.',F_mtr)
 %%
 % Now we can calculate a rotor back core allowing a flux density between
 % 1.4 and 1.7. It is taken as 1.7 T.
-Bcr = 1.7;
+B_cr = 1.7;
 %%
 % 
 % $h_{cr} = \frac{\phi}{2 L B_{cr}}$
-h_cr = pole_flux/(2*L*Bcr);
+h_cr = pole_flux/(2*L*B_cr);
 h_cr = (floor(h_cr*10000))/10000;
 fprintf('Rotor back core is %2.1f mm.',h_cr*1000)
 %%
@@ -639,6 +639,150 @@ fprintf('a and b are calculated as %2.1f and %2.1f mm.',a*1000, b*1000)
 %% The Magnetization Current
 
 %% 
+% The magnetization mmf Flm is
+%  
+% $F_{lm} = 2(K_c g \frac{B_g}{\mu_0} + F_{mts} + F_{mtr} + F_{mcs} + F_{mcr})$
+%  
+% To be able to calculate unknown mmfs in this equation, again Carter's
+% coefficient wil be used. Its first multiplier was already calculated.
+% Here its second part that is related with the rotor will be calculated.
+%  
+b_or = 1.5*10^-3;
+fprintf('Rotor slot opening is %1.1f  mm.',b_or*1000)
+%%
+% 
+% $K_{c2} = \frac{\tau_r}{\tau_r-b_e}$
+%  
+% $b_e = Kb_{or}$
+%  
+% $K = \frac{\frac{b_{or}}{g}}{5 + \frac{b_{or}}{g}}$
+%  
+fprintf('Carter coefficient was calculated as %1.2f.',Kc)
+%%
+be = K*b_or;
+Kc2 = slot_pitch_r/(slot_pitch_r-be);
+Kc = Kc*Kc2;
+fprintf('Now its total recalculated value is %1.2f.',Kc)
+%% 
+% Since these values are close to each other, new value will be used in
+% next calculations.
+%  
+% For calculating back core mmfs, another missing parameter is subunitary
+% empirical coefficient that defines an average length of flux path in the
+% back core. Formula (15.60) will be used for its calculation:
+%  
+% $C_{cs,r} \approx 0.88{e^{-0.4B_{cs,r}}}^2$
+Cc_s = 0.88*exp((-0.4*B_cs)^2);
+Cc_r = 0.88*exp((-0.4*B_cr)^2);
+%%
+% For back core calculations, formula below will be used:
+%  
+% $F_{mcs,r} = C_{cs,r} \frac{\pi(D_{out,shaft} - h_{cs,r})}{2p}H_{cs,r}$
+fprintf('Bcs and Bcr were %1.2f and %1.2f Tesla.',B_cs,B_cr)
+%%
+H_cs = 905; 
+H_cr = 4800;
+fprintf('From table 15.4 corresponding H values are %d and %d',H_cs,H_cr)
+%%
+% 
+F_mcs = Cc_s*pi*(Dout-h_cs)/(2*p)*H_cs;
+F_mcr = Cc_r*pi*(d_shaft_max-h_cr)/(2*p)*H_cr;
+fprintf('Back core mmfs are %3.1f and %3.1f Aturns',F_mcs,F_mcr)
+%%
+% Now we can calculate magnetization mmf:
+F_lm = 2*(Kc*g*Bg/mu_0 + F_mts + F_mtr + F_mcs + F_mcr);
+fprintf('It is calculated as  %4.0f Aturns',F_lm)
+%%
+% For magnetization current formula (15.62) will be used:
+%  
+% $I_{\mu} = \frac{\pi p (f_{lm} / 2 )}{3\sqrt{2}N_{ph}k_w}$
+I_mu = pi*p*F_lm/(6*sqrt(2)*Nph*kw);
+fprintf('The magnetization current is calculated as %3.1f A',I_mu)
+%%
+fprintf('Its (p.u.) value is %0.2f ',I_mu/Iin_rated)
+%% Resistances and Inductances
+
+%% 
+% For stator phase resistance formula (15.63) will be used.
+%  
+% $R_s = \rho_{Co}\frac{l_c N_{ph}}{A_{co}a_1}$
+%  
+% Here coil length includes the active part 2L and the end connection part
+% 2lend
+%  
+% $l_c = 2(L + l_{end})$
+%  
+% End connection length depends on the coil span, number of poles, shape of
+% coils and number of layers in the winding. For its calculation formula
+% (15.65) will be used.
+%  
+% $l_{end} = 2y - 0.02$
+%  
+% Here, y is the coil span and can be calculated as
+%  
+% $y = \beta \tau$
+%  
+% In coil span formula, beta is chording factor and it is already selected
+% as 5/6.
+y = pitch_factor*pole_pitch;
+l_end = 2*y-0.02;
+fprintf('The end connection length is %2.1f cm',l_end*100)
+l_c = 2*(L + l_end);
+%%
+fprintf('So the coil length is %2.1f cm',l_end*100)
+%%
+% Another consideration for stator resistance is the copper resistivity. At
+% room temperature its value is $1.78 10^{-8} \Omega m$ and at 115 degree
+% it increases 37%. Because we don't know the rated temperature yet and
+% this value will be taken for 90 degrees.
+Resist_Cu = 2.2364*10^-8;
+Rs = Resist_Cu*l_c*Nph/(Aco*10^-6);
+fprintf('The stator resistance is %1.3f mohm',Rs*1000)
+%%
+% Now we can continue with rotor/end ring segment equivalent resistance.
+% Its value will be calculated using formula (15.70)
+%  
+% $R_{be} = \rho_{Al}[\frac{LK_R}{A_b} + \frac{l_{er}}{2A_{er}sin^{2}(\frac{\pi p}{N_r})}]$
+%  
+l_er = pi*(Dis-2*g-b)/Nr;
+fprintf('Here, end ring segment length is %2.1f mm',l_end*1000)
+%%
+% Here using formulas (15.72) and (15.73) skin effect resistance
+% coefficient is calculated.
+Resist_Al_20 = 3.1*10^-8;
+beta_s = sqrt(2*pi*f_rated*mu_0/(2*Resist_Al_20));
+Kr = beta_s*h_r;
+fprintf('It is %2.2f ',Kr)
+%%
+% If we consider the same temperature again;
+Resist_Al_90 = Resist_Al_20*(1-(90-20)/273);
+Rbe = Resist_Al_90*(L*Kr/A_b+l_er/(2*A_er*((sin(pi*p/Nr))^2)));
+fprintf('Rbe is calculated as%1.3f mohm',Rbe*1000)
+%%
+% In the equivalent circuit we use referred rotor resistance. Therefore its
+% referred value is going to be calculated using formula (15.74)
+%  
+% $R_r' = \frac{4m}{N_r}(N_{ph}k_w)^{2}R_{be}$
+Rr = 4*m*((Nph*kw)^2)*Rbe/Nr;
+fprintf('Referred rotor resistance is %2.2f mohm',Rr*1000)
+%%
+% For calculating stator phase leakage reactance, slot differential and end
+% ring connection coefficients are going to be calculated first.
+lambda_s = ((2/3)*hs/(b_s1+b_s2)+2*h_w/(b_os+b_s1)+h_os/b_os)*(1+3*pitch_factor)/4;
+Cs = 1-0.033*(b_os^2)/(g*slot_pitch);
+theta1 = pi*(6*pitch_factor-5.5);
+sigma_ds = (0.14*sin(theta1)+0.76)*10^-2;
+lambda_ds = 0.9*slot_pitch*((q*kw)^2)*Cs*sigma_ds/(Kc*g*(1+Kst));
+lambda_ec = 0.34*q*(l_end-0.64*pitch_factor*pole_pitch)/L;
+Xsl = 2*mu_0*2*pi*f_rated*L*(Nph^2)*(lambda_s+lambda_ds+lambda_ec)/(p*q);
+fprintf('The stator phase reactance is %2.2f mohm',Xsl*1000)
+%%
+
+
+
+
+
+
 
 
 
