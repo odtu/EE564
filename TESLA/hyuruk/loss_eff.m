@@ -4,7 +4,7 @@ Pco = 3*Rs*Iph_rated_rms^2; % [W] stator winding losses
 Pal = 3*Rrpsn*Ki^2*Iph_rated_rms^2; % [W] rotor cage losses (eq. 15.97)
 Pmv = 0.012*power_rated*10^3; % [W] mechanical/ventilation losses for p1=2
 Pstray = 0.01*power_rated*10^3; % [W] stray losses 
-yiron = 7800;
+yiron = 7800; % [kg/m^3] density
 Gt1 = yiron*Ns*bts*(hs+hws+hos)*L*Kfe; % [kg] stator tooth weight
 Kt = 1.7;   % [-] (eq. 15.98) core loss augmentation
 p10 = 2.5;  % [W/kg} specific losses in W/kg at 1.0 Tesla and 50Hz
