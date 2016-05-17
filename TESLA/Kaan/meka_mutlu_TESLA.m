@@ -482,7 +482,163 @@ fprintf('Back core flux density is %1.2f Tesla.',B_cs)
 %% Rotor Slots
 
 %% 
+% First step of designing rotor slots might be deciding the number of rotor
+% slots. An arbitrary selection isn't possible because all stor and rotor
+% slot combinations aren't possible. At this point there are so many
+% resources that suggest the most adequate combination.
+%  
+% Once EE565 lecture notes are reviewed, suggestions are found as :
+%  
+% <<NsNr.PNG>>
+%  
+% From the textbook, suggestions are as follows:
+%  
+% <<NsNr2.PNG>>
+%  
+% For fair play, their intersection number 44 was selected as number of 
+% rotor slots at first. But then it couldn't be possible to design rotor
+% slot for our rated power. So this number is selected as 56 in the second
+% attempt. But that one also couldn't be enough. Then 84 is selected and it
+% is OK.
+Nr = 84;
+%%
+%  
+% <<RotorShapes.PNG>>
+%  
+% As we did for stator shape selection, for ease of area calculation
+% textbook's selection will be followed and option c will be selected among
+% suggested options.
+%  
+% We can go on the design with calculating the bar current:
+%  
+% $I_b = K_I \frac{2m N_s k_w}{N_r} I_{in}$
+%  
+% Here Ký will be calculated with the formula below:
+%  
+% $K_I \approx 0.8cos\phi_{ln} + 0.2$
+K_I = 0.8*Aimed_pf+0.2;
+fprintf('This constant calculated as %0.3f .',K_I)
+%%
+Ib = K_I*2*3*Nph*kw*Iin_rated/Nr;
+fprintf('Bar current is %3.1f A.',Ib)
+%%
+% For high efficiency, the rotor current density in the rotor bar is
+% selected as 3.42A/mm^2. Using this value, rotor slot area may be
+% calculated.
+%  
+% $A_b = \frac{I_b}{J_b}$
+%
+Jb = 3.42*10^6; %[A/m^2]
+A_b = Ib/Jb;
+fprintf('The rotor slot area is %3.2f mm^2.',A_b*10^6)
+%%
+% Since we have calculated bar current, it is possible to calculate also
+% end ring current using formula below (15.37)
+%  
+% $I_{er} = \frac{I_b}{2 sin \frac{\pi p}{N_r}}$
+Ier = Ib/(2*sin(pi*p/Nr));
+fprintf('End ring current is %3.1f A.',Ier)
+%%
+% Current density of end ring is less than 75 to 80 % of the bar. The
+% middle point will be selected as the multiplier.
+Jer = 0.775*Jb;
+fprintf('77,5 %% of the bar current density is taken and it is %3.2f A/mm^2.',Jer*10^-6)
+%%
+% With this variables it is possible to calculate the end ring cross
+% section area:
+%  
+% $A_{er} = \frac{I_{er}}{J_{er}}$
+A_er = Ier/Jer; % [m^2]
+fprintf('The rotor end ring area is %3.2f cm^2.',A_er*10^4)
+%%
+% We may now proceed to rotor slot sizing based on the variables defined on
+% figure below: 
+%  
+% <<RotorDetailed.PNG>>
+%  
+% Let us calculate the rotor slot pitch using formula below (15.39)
+%  
+% $\tau_r = \frac{\pi(D_{is}-2g)}{N_r}$
+slot_pitch_r = pi*(Dis-2*g)/Nr;
+fprintf('The rotor slot pitch is %3.2f mm.',slot_pitch_r*1000)
+%%
+% Rotor tooth flux density can be selected as 1.65 Tesla. Than it is
+% possible to calculate the tooth width:
+Btr = 1.65;
+%%
 % 
+% $b_{tr} \approx \frac{B_g}{K_{Fe} B_{tr}} \tau_r$
+b_tr = Bg/(Kfe*Btr)*slot_pitch_r;
+b_tr = (round(b_tr*10000))/10000;
+fprintf('Rotor tooth width width is %1.1f mm.',b_tr*1000)
+%%
+% Now d1 diameter may be calculated using formula (15.42)
+%  
+% $d_1 = \frac{\pi (D_{re} -2h_{or}) -N_rb_{tr}}{\pi + N_r}$
+h_or = 0.4*10^-3; %[m]
+Dre = Dis - g;
+d1 = (pi*(Dre-2*h_or)-Nr*b_tr)/(pi+Nr);
+d1 = (ceil(d1*10000))/10000;
+fprintf('This diameter is %1.1f mm.',d1*1000)
+%%
+% To completely define the rotor slot geometry, it is needed to use slot
+% area equations (15.43) and (15.44)
+%  
+% $A_b = \frac{\pi}{8}(d_1^2 + d_2^2) + \frac{(d_1 + d_2)h_r}{2}$
+%  
+% $d_1 - d_2 = 2 h_r tan \frac{\pi}{N_r}$
+%  
+% From the second equation it is found that d2 is equal to 3.5-0.0374hr .
+% It will be substated in the first equation.
+h_r =29.8*10^-3; %[m]
+fprintf('By this way hr is found as %2.1f mm.',h_r*1000)
+%%
+d2 = d1 - 2*tan(pi/Nr)*h_r; %[m]
+fprintf('So d2 diameter is %2.1f mm.',d2*1000)
+%%
+% Now let's verify the rotor teeth mmf for Btr is 1.65 Tesla and H of rotor
+% tooth is 3460 A/m.
+Htr = 3460;
+%%
+% 
+% $F_{mtr} = H_{tr}(h_r + h_{or} + \frac{d_1 + d_2}{2})$
+F_mtr2 = Htr*(h_r+h_or+(d1+d2)/2);
+fprintf('Rotor tooth mmf is recalculated as %3.3f Aturns.',F_mtr2)
+%%
+fprintf('Previous calculation was %3.3f and it is acceptable.',F_mtr)
+%%
+% Now we can calculate a rotor back core allowing a flux density between
+% 1.4 and 1.7. It is taken as 1.7 T.
+Bcr = 1.7;
+%%
+% 
+% $h_{cr} = \frac{\phi}{2 L B_{cr}}$
+h_cr = pole_flux/(2*L*Bcr);
+h_cr = (floor(h_cr*10000))/10000;
+fprintf('Rotor back core is %2.1f mm.',h_cr*1000)
+%%
+% For rotor, missing part is shaft diameter and its details. The maximum
+% shaft diameter is:
+%  
+% $(D_{shaft})_{max} \leq D_{is} -2g-2(h_{or} + h_r + h_{cr} + \frac{d_1 + d_2}{2})$
+%  
+d_shaft_max = Dis-2*g-2*(h_or+h_r+h_cr+(d1+d2)/2);
+fprintf('So this maximum value is %2.1f mm.',d_shaft_max*1000)
+%%
+% For end ring detail, two extra lengths will be defined and their
+% explanations are in the figure below:
+%  
+% <<EndRing.PNG>>
+%  
+% $b = 1.1(h_r + h{or} +\frac{d_1 + d_2}{2})$
+b = 1.1*(h_r+h_or+(d1+d2)/2);
+a = A_er/b;
+b = (floor(b*10000))/10000;
+a = (floor(a*10000))/10000;
+fprintf('a and b are calculated as %2.1f and %2.1f mm.',a*1000, b*1000)
+%% The Magnetization Current
+
+%% 
 
 
 
