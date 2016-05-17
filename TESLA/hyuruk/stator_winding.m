@@ -8,6 +8,17 @@ Kp1 = sind(pitch_angle/2); % [-] fundamental pitch factor (eq. 15.9)
 Kd1 = sind(q*slot_angle_alpha/2)/(q*sind(slot_angle_alpha/2));
                         % [-] fundamental distribution factor (eq. 15.8)
 Kw1 = Kp1*Kd1;          % [-] fundamental winding factor
+
+Kp5 = sind(5*pitch_angle/2); % [-] 5th harmonic pitch factor (eq. 15.9)
+Kd5 = sind(q*5*slot_angle_alpha/2)/(q*sind(5*slot_angle_alpha/2));
+                        % [-] 5th harmonic distribution factor (eq. 15.8)
+Kw5 = Kp5*Kd5;          % [-] 5th harmonic winding factor
+
+Kp7 = sind(7*pitch_angle/2); % [-] 7th harmonic pitch factor (eq. 15.9)
+Kd7 = sind(q*7*slot_angle_alpha/2)/(q*sind(7*slot_angle_alpha/2));
+                        % [-] 7th harmonic distribution factor (eq. 15.8)
+Kw7 = Kp7*Kd7;          % [-] 7th harmonic winding factor
+
 Bg = 0.65;              % [Tesla] (e.q. 15.11)
 Kst = 0.4;              % [-] so 1+Kst = 1.4
 den_shape = 0.729;      % [-] density shape factor fig.14.13, where 1+Kst=1.4
