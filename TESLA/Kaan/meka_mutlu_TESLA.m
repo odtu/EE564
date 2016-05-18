@@ -609,11 +609,11 @@ fprintf('Previous calculation was %3.3f and it is acceptable.',F_mtr)
 %%
 % Now we can calculate a rotor back core allowing a flux density between
 % 1.4 and 1.7. It is taken as 1.7 T.
-Bcr = 1.7;
+B_cr = 1.7;
 %%
 % 
 % $h_{cr} = \frac{\phi}{2 L B_{cr}}$
-h_cr = pole_flux/(2*L*Bcr);
+h_cr = pole_flux/(2*L*B_cr);
 h_cr = (floor(h_cr*10000))/10000;
 fprintf('Rotor back core is %2.1f mm.',h_cr*1000)
 %%
@@ -639,8 +639,357 @@ fprintf('a and b are calculated as %2.1f and %2.1f mm.',a*1000, b*1000)
 %% The Magnetization Current
 
 %% 
+% The magnetization mmf Flm is
+%  
+% $F_{lm} = 2(K_c g \frac{B_g}{\mu_0} + F_{mts} + F_{mtr} + F_{mcs} + F_{mcr})$
+%  
+% To be able to calculate unknown mmfs in this equation, again Carter's
+% coefficient wil be used. Its first multiplier was already calculated.
+% Here its second part that is related with the rotor will be calculated.
+%  
+b_or = 1.5*10^-3;
+fprintf('Rotor slot opening is %1.1f  mm.',b_or*1000)
+%%
+% 
+% $K_{c2} = \frac{\tau_r}{\tau_r-b_e}$
+%  
+% $b_e = Kb_{or}$
+%  
+% $K = \frac{\frac{b_{or}}{g}}{5 + \frac{b_{or}}{g}}$
+%  
+fprintf('Carter coefficient was calculated as %1.2f.',Kc)
+%%
+be = K*b_or;
+Kc2 = slot_pitch_r/(slot_pitch_r-be);
+Kc1 = Kc;
+Kc = Kc1*Kc2;
+fprintf('Now its total recalculated value is %1.2f.',Kc)
+%% 
+% Since these values are close to each other, new value will be used in
+% next calculations.
+%  
+% For calculating back core mmfs, another missing parameter is subunitary
+% empirical coefficient that defines an average length of flux path in the
+% back core. Formula (15.60) will be used for its calculation:
+%  
+% $C_{cs,r} \approx 0.88{e^{-0.4B_{cs,r}}}^2$
+Cc_s = 0.88*exp((-0.4*B_cs)^2);
+Cc_r = 0.88*exp((-0.4*B_cr)^2);
+%%
+% For back core calculations, formula below will be used:
+%  
+% $F_{mcs,r} = C_{cs,r} \frac{\pi(D_{out,shaft} - h_{cs,r})}{2p}H_{cs,r}$
+fprintf('Bcs and Bcr were %1.2f and %1.2f Tesla.',B_cs,B_cr)
+%%
+H_cs = 905; 
+H_cr = 4800;
+fprintf('From table 15.4 corresponding H values are %d and %d',H_cs,H_cr)
+%%
+% 
+F_mcs = Cc_s*pi*(Dout-h_cs)/(2*p)*H_cs;
+F_mcr = Cc_r*pi*(d_shaft_max-h_cr)/(2*p)*H_cr;
+fprintf('Back core mmfs are %3.1f and %3.1f Aturns',F_mcs,F_mcr)
+%%
+% Now we can calculate magnetization mmf:
+F_lm = 2*(Kc*g*Bg/mu_0 + F_mts + F_mtr + F_mcs + F_mcr);
+fprintf('It is calculated as  %4.0f Aturns',F_lm)
+%%
+% For magnetization current formula (15.62) will be used:
+%  
+% $I_{\mu} = \frac{\pi p (f_{lm} / 2 )}{3\sqrt{2}N_{ph}k_w}$
+I_mu = pi*p*F_lm/(6*sqrt(2)*Nph*kw);
+fprintf('The magnetization current is calculated as %3.1f A',I_mu)
+%%
+fprintf('Its (p.u.) value is %0.2f ',I_mu/Iin_rated)
+%% Resistances and Inductances
 
+%% 
+% For stator phase resistance formula (15.63) will be used.
+%  
+% $R_s = \rho_{Co}\frac{l_c N_{ph}}{A_{co}a_1}$
+%  
+% Here coil length includes the active part 2L and the end connection part
+% 2lend
+%  
+% $l_c = 2(L + l_{end})$
+%  
+% End connection length depends on the coil span, number of poles, shape of
+% coils and number of layers in the winding. For its calculation formula
+% (15.65) will be used.
+%  
+% $l_{end} = 2y - 0.02$
+%  
+% Here, y is the coil span and can be calculated as
+%  
+% $y = \beta \tau$
+%  
+% In coil span formula, beta is chording factor and it is already selected
+% as 5/6.
+y = pitch_factor*pole_pitch;
+l_end = 2*y-0.02;
+fprintf('The end connection length is %2.1f cm',l_end*100)
+l_c = 2*(L + l_end);
+%%
+fprintf('So the coil length is %2.1f cm',l_c*100)
+%%
+% Another consideration for stator resistance is the copper resistivity. At
+% room temperature its value is $1.78 10^{-8} \Omega m$ and at 115 degree
+% it increases 37%. Because we don't know the rated temperature yet and
+% this value will be taken for 90 degrees.
+Resist_Cu = 2.2364*10^-8;
+Rs = Resist_Cu*l_c*Nph/(Aco*10^-6);
+fprintf('The stator resistance is %1.3f mohm',Rs*1000)
+%%
+% Now we can continue with rotor/end ring segment equivalent resistance.
+% Its value will be calculated using formula (15.70)
+%  
+% $R_{be} = \rho_{Al}[\frac{LK_R}{A_b} + \frac{l_{er}}{2A_{er}sin^{2}(\frac{\pi p}{N_r})}]$
+%  
+l_er = pi*(Dis-2*g-b)/Nr;
+fprintf('Here, end ring segment length is %2.1f mm',l_er*1000)
+%%
+% Here using formulas (15.72) and (15.73) skin effect resistance
+% coefficient is calculated.
+Resist_Al_20 = 3.1*10^-8;
+beta_s = sqrt(2*pi*f_rated*mu_0/(2*Resist_Al_20));
+Kr = beta_s*h_r;
+fprintf('It is %2.2f ',Kr)
+%%
+% If we consider the same temperature again;
+Resist_Al_90 = Resist_Al_20*(1-(90-20)/273);
+Rbe = Resist_Al_90*(L*Kr/A_b+l_er/(2*A_er*((sin(pi*p/Nr))^2)));
+fprintf('Rbe is calculated as%1.3f mohm',Rbe*1000)
+%%
+% In the equivalent circuit we use referred rotor resistance. Therefore its
+% referred value is going to be calculated using formula (15.74)
+%  
+% $R_r' = \frac{4m}{N_r}(N_{ph}k_w)^{2}R_{be}$
+Rr = 4*m*((Nph*kw)^2)*Rbe/Nr;
+fprintf('Referred rotor resistance is %2.2f mohm',Rr*1000)
+%%
+% For calculating stator phase leakage reactance, slot differential and end
+% ring connection coefficients are going to be calculated first.
+lambda_s = ((2/3)*hs/(b_s1+b_s2)+2*h_w/(b_os+b_s1)+h_os/b_os)*(1+3*pitch_factor)/4;
+Cs = 1-0.033*(b_os^2)/(g*slot_pitch);
+theta1 = pi*(6*pitch_factor-5.5);
+sigma_ds = (0.14*sin(theta1)+0.76)*10^-2;
+lambda_ds = 0.9*slot_pitch*((q*kw)^2)*Cs*sigma_ds/(Kc*g*(1+Kst));
+lambda_ec = 0.34*q*(l_end-0.64*pitch_factor*pole_pitch)/L;
+Xsl = 2*mu_0*2*pi*f_rated*L*(Nph^2)*(lambda_s+lambda_ds+lambda_ec)/(p*q);
+fprintf('The stator phase reactance is %2.2f mohm',Xsl*1000)
+%%
+% For calculating equivalent rotor bar leakage reactance formula (15.80)
+% will be used and required coefficients will be calculated.
+lambda_r = 0.66+2*h_r/(3*d1+3*d2)+h_or/b_or;
+sigma_dr = 9*((6*p/Nr)^2)*10^-2;
+lamda_dr = 0.9*slot_pitch_r*sigma_dr*((Nr/(6*p))^2)/(Kc*g);
+lambda_er = 2.3*(Dis-2*g-b)/(Nr*L*4*(sin(pi*p/Nr))^2)*log10(4.7*(Dis-2*g-b)/(b+2*a));
+Kx = 1.5*Kr;
+Xbe = 2*pi*f_rated*mu_0*L*(lambda_r*Kx+lamda_dr+lambda_er);
+fprintf('The rotor bar leakage reactance is %2.2f mohm',Xbe*1000)
+%%
+% Rotor leakage reactance is calculated over rotor bar leakage reactance.
+% Its formula is given with (15.85).
+Xrl = 4*m*((Nph*kw)^2)*Xbe/Nr;
+fprintf('The rotor leakage reactance is %2.2f mohm',Xrl*1000)
+%%
+% Another important parameter is magnetizing inductance and it is going to
+% be calculated using formula (15.88)
+Xm = sqrt((((Vline/sqrt(3))/I_mu)^2)-Rs^2)-Xsl;
+fprintf('The magnetizing reactance Xm is %2.2f ohm',Xm)
+%%
+% At rated speed rotor resistances are changed due to the slip. There, both
+% skin and leakage saturation effects have to be eliminated.
+Kr = 1;
+Rbe_sn = Resist_Al_90*(L*Kr/A_b+l_er/(2*A_er*((sin(pi*p/Nr))^2)));
+Rr_sn = Rr*Rbe_sn/Rbe;
+fprintf('Rotor resistance at rated speed is calculated as %1.3f mohm',Rr_sn*1000)
+%% Losses and Efficiency
 
+%% 
+% Efficiency is the rate of output power to the input power. It is possible
+% to describe input power as ouput+losses. So calculation the losses will
+% hep us to calculate efficiency.
+%  
+% Let us start with stator winding losses.
+% $P_{co} = 3R_s I_{in}^{2}$
+P_co = 3*Rs*Iin_rated^2;
+fprintf('Stator winding losses are calculated as %1.2f kW',P_co/1000)
+%%
+% We have also losses at rotor cage at rated speed.
+% $P_{Al} = 3R_r I_{in}^{2}$
+P_al = 3*Rr_sn*(K_I*Iin_rated)^2;
+fprintf('Rotor cage losses are calculated as %1.2f kW',P_al/1000)
+%%
+% Mechanical and ventilation losses are considered as 1.2% of rated power.
+P_mech = Prated*0.012;
+fprintf('Mechanical losses are taken as %1.2f kW',P_mech/1000)
+%%
+% For stray losses 1% of rated power will be taken as standard value.
+P_stray = Prated*0.01;
+fprintf('Stray losses are taken as %1.2f kW',P_stray/1000)
+%%
+% Remaining losses are core losses made of fundamental and additional
+% (harmonic) iron losses. The fundamental core losses occur only in the
+% teeth and back iron of the stator as the rotor frequency is low. Stator
+% teeth fundamental losses are going to be calculated using formula (15.98)
+density_iron = 7800;
+G_ts = density_iron*Ns*b_ts*(hs+h_w+h_os)*L*Kfe;
+fprintf('Stator tooth weight is %2.2f kg',G_ts)
+%%
+% 
+p10 = 2.5;
+Kt = 1.6;
+P_tl = Kt*p10*((f_rated/50)^1.3)*(B_ts^1.7)*G_ts;
+fprintf('Stator teeth fundamental lose is %2.2f W',P_tl)
+%%
+% In a similar way, using (15.100) stator back iron fundamental losses are
+% going to be calculated.
+Ky = 1.6;
+G_yl = density_iron*(pi/4)*((Dout^2)-(Dout-2*h_cs)^2)*L*Kfe;
+fprintf('Yoke weight is %2.2f kg',G_yl)
+%%
+P_yl = Ky*p10*((f_rated/50)^1.3)*(B_cs^1.7)*G_yl;
+fprintf('Stator back core fundamental lose is %2.2f W',P_yl)
+%%
+fprintf('So the fundamental iron losses is %2.2f W',P_yl+P_tl)
+%%
+% The tooth flux pulsation core loss constitutes the main components of
+% stray losses.
+G_tr = density_iron*L*Kfe*Nr*(h_r+(d1+d2)/2)*b_tr;
+fprintf('Rotor teeth weight is %2.2f kg',G_tr)
+%%
+% 
+Kps = 1/(2.2-B_ts);
+Kpr = 1/(2.2-Btr);
+Bps = (Kc2-1)*Bg;
+Bpr = (Kc1-1)*Bg;
+P_irons = 0.5*(10^-4)*(((Nr*f_rated*Kps*Bps/p)^2)*G_ts+((Ns*f_rated*Kpr*Bpr/p)^2)*G_tr);
+fprintf('Total iron loss is %2.2f kW',(P_irons+P_yl+P_tl)/1000)
+%%
+P_loss_total = P_tl+P_stray+P_mech+P_al+P_co+P_yl+P_irons;
+fprintf('Total loss of the motor is %2.2f kW',P_loss_total/1000)
+%%
+Eff_calc = Prated/(Prated+P_loss_total);
+fprintf('Calculated efficiency is %2.2f %%.',Eff_calc*100)
+%%
+fprintf('Targeted efficiency was %2.2f %% and they are close to each other.',Aimed_eff*100)
+%% Operation Characteristics
 
+%% 
+% The operation characteristics are defined here as active no load current,
+% rated slip and rated shaft torque.
 
+Ioa = (P_irons+P_yl+P_tl+P_mech+3*Rs*I_mu^2)/(3*Vline/sqrt(3));
+fprintf('Active no load current is %2.2f A.',Ioa)
+%%
+Sn = P_al/(Prated+P_al+P_mech+P_stray);
+fprintf('Rated slip is %0.4f.',Sn)
+%%
+T_rated = Prated/(2*pi*f_rated*(1-Sn)/p);
+fprintf('Rated shaft torque is %2.2f Nm.',T_rated)
+%%
+pf_rated = Prated/(3*(Vline/sqrt(3))*Iin_rated*Eff_calc);
+fprintf('Calculated power factor is %0.3f.',pf_rated)
+%%
+fprintf('Targeted power factor was %0.2f % and they are close to each other.',Aimed_pf)
+%% Thermal Design
+
+%% 
+% Tesla Motors has the patent about liquid motor cooling.
+%  
+% http://www.google.com/patents/US7489057
+%  
+% First the temperature differential between the conductors in slots and
+% the slot wall is calculated. In the book equation (15.123) suggests some
+% convection coefficients but these are for selfventilators and power range
+% isn't enough for us. Because Tesla Motors company prefers liquid cooling
+% design will be considered in that decision.
+%  
+% http://www.engineeringtoolbox.com/overall-heat-transfer-coefficients-d_284.html
+%  
+% Once this website is checked, it is seen that for water cooling,
+% convection coefficient may be taken as 400 W/m^2K.
+conv_coef = 400;
+%%
+% Another required coefficient is about conductivity. Following equation
+% (15.24) it is taken as 822 W/m^2K.
+cond_coef = 833;
+%%
+% Let us calculate the stator slot lateral area
+%  
+% $A_{ls} \approx (2h_s + b_{s2})LN_s$
+A_ls = (2*hs+b_s2)*L*Ns;
+fprintf('It is calculated as %0.3f m^2.',A_ls)
+%%
+% If we take finn constant from equation (15.126) as 3;
+K_fin = 3;
+A_frame = pi*Dout*(L+pole_pitch)*K_fin;
+fprintf('Frame area calculated as %0.3f m^2.',A_frame)
+%%
+% Now we may calculate the temperature difference between conductors and
+% slow wall:
+delta_co = P_co/(cond_coef*A_ls);
+fprintf('This temperature change is %1.2f degree.',delta_co)
+%%
+% Supposing the ambient temperature as 40 degree, now we may calculate the
+% winding temperature:
+delta_frame = P_loss_total/(conv_coef*A_frame);
+fprintf('Winding temperature change is %2.2f degree.',delta_frame)
+%%
+fprintf('In this case maximum temperature is %2.2f degree.',delta_frame+delta_co+40)
+%%
+% This value is acceptable since design is made for 80 degree maximum.
+%% Mass Calculation
+
+%% 
+% Some of the weights are calculated to be able to calculate iron losses
+% and missing ones will be calculated in this part to be able to predict
+% motor's total weight.
+%  
+% Calculated weights are:
+fprintf('Stator teeth weight is %2.2f kg',G_ts)
+%%
+fprintf('Stator back iron weight is %2.2f kg',G_yl)
+%%
+fprintf('Rotor teeth weight is %2.2f kg',G_tr)
+%%
+% We can also calculate the rotor back core weight;
+G_yr = density_iron*(pi/4)*(((Dis-2*h_cr)^2) - d_shaft_max^2)*L*Kfe;
+fprintf('It is %2.2f kg',G_yr)
+%%
+% We can also calculate shaft weight:
+G_shaft = density_iron*(pi/4)*(d_shaft_max^2)*Kfe*(L+0.1);
+fprintf('That one is %2.2f kg',G_shaft)
+%%
+G_iron = G_ts + G_yl + G_tr + G_yr +G_shaft;
+fprintf('So the total iron weight is %2.2f kg',G_iron)
+%%
+% It is also possible for us to calculate wire weight;
+density_Cu = 8960; % kg/m^3
+G_wire = density_Cu*m*Nph*l_c*Aco*10^-6;
+fprintf('Wire mass is %2.2f kg',G_wire)
+%%
+% Lastly, let us calculate the Aliminium bar weight of rotor:
+density_Al = 2700; % kg/m^3
+G_bar = density_Al*(l_er*A_er+L*A_b)*Nr;
+fprintf('Al bar weight is %2.2f kg',G_bar)
+%%
+% In this case total mass of the motor is
+fprintf('In this case total mass of the motor is is %2.2f kg',G_bar+G_wire+G_iron)
+%% Motoranalysis Drawings
+
+%%
+% Here are the motoranalysis figures generated by motoranalysis tool.
+% 
+% <<Drawing.PNG>>
+%  
+% <<Drawing_stator.PNG>>
+%  
+% <<Drawing_rotor.PNG>>
+%  
+% <<windings.PNG>>
+%  
+% <<BH_15.4.PNG>>
+%  
 end
