@@ -1,0 +1,928 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>EE564 - Design of Electrical Machines</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-05-18"><meta name="DC.source" content="traction_motor_design.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>EE564 - Design of Electrical Machines</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Project-2: Asynchronous Traction Motor Design</a></li><li><a href="#2">Name: Mesut U&#287;ur</a></li><li><a href="#3">ID: 1626753</a></li><li><a href="#4">INTRODUCTION</a></li><li><a href="#54">Core losses</a></li><li><a href="#55">Other losses</a></li><li><a href="#56">Efficiency</a></li></ul></div><h2>Project-2: Asynchronous Traction Motor Design<a name="1"></a></h2><h2>Name: Mesut U&#287;ur<a name="2"></a></h2><h2>ID: 1626753<a name="3"></a></h2><h2>INTRODUCTION<a name="4"></a></h2><p>In this project, we are asked to design a squirrel cage asynchronous motor for a high power railway traction vehicle.</p><p>This report is composed of the following sections:</p><div><ol><li>Project specifications and selected main design inputs</li><li>Calculation of main dimensions</li><li>Selection of main dimensions and validation of machine loading</li><li>Selection of stator slot number and turn numbers</li><li>Validating the results and iterations</li><li>Calculation of MMF, flux density, winding factors and the resultant induced voltage</li><li>Selection of rotor slot number</li><li>Selection of stator and rotor conductors</li><li>Calculation of stator slot and rotor bar dimensions</li><li>Calculation of equivalent core length and effective air gap distance</li><li>Calculation of winding and bar resistances, leakage inductances and magnetizing inductance</li><li>Calculation of copper and aluminium losses</li><li>Calculation of copper and aluminium masses</li><li>Calculation of iron mass</li><li>Calculation of core losses and the core loss resistance of equivalent circuit</li><li>Calculation of stator to rotor turns ratio</li><li>Calculation of efficiency</li><li>Basic thermal analysis</li><li>Conclusions</li><li>References</li></ol></div><p>Specifications</p><p>Traction asynchronous squirrel cage induction motor</p><p>Rated Power Output: 1280 kW</p><p>Line-to-line voltage: 1350 V</p><p>Number of poles: 6</p><p>Rated Speed: 1520 rpm (72 km/h) (driven with 78 Hz inverter)</p><p>Rated Motor Torque: 7843 Nm</p><p>Cooling: Forced Air Cooling</p><p>Insulating Class: 200</p><p>Train Wheel Diameter: 1210 mm</p><p>Maximum Speed: 140 km/h</p><p>Gear Ratio: 4.821</p><p>Duty: ?</p><p>Enclosure: ?</p><p>Efficiency: IE3, premium efficiency: 96 %</p><p>Efficiency: IE4, super premium efficiency: 97 %</p><p>Power factor: ?</p><p>IP54??</p><p>Class 200</p><p>N</p><p>Average winding temp rise: 130 degree C</p><p>Hot spot temp rise: 160 degree C</p><p>Maximum winding temp: 200 degree C</p><p>Design Inputs</p><pre class="codeinput">Prated = 1280e3; <span class="comment">% watts</span>
+pole = 6;
+pole_pair = pole/2;
+phase = 3;
+Vrated = 1350; <span class="comment">% volts line-to-line</span>
+Nrated = 1520; <span class="comment">% rpm</span>
+frated = 78; <span class="comment">% Hz</span>
+vrated = 72; <span class="comment">% km/h</span>
+vmax = 140; <span class="comment">% km/h</span>
+Trated = 7843; <span class="comment">% Nm</span>
+wheel_dia = 1.21; <span class="comment">% m</span>
+gear_ratio = 4.821;
+power_factor = 0.86; <span class="comment">% assumed (not a given data)</span>
+efficiency = 0.965; <span class="comment">% assumed (not a given data)</span>
+</pre><p>Main dimensions: length, diameter, electrical and magnetic loading</p><pre class="codeinput">Vphase = Vrated/sqrt(3); <span class="comment">% volts</span>
+Nsync = 120*frated/pole; <span class="comment">% rpm</span>
+wrated = Nrated*2*pi/60; <span class="comment">% rad/sec</span>
+torque = Prated/wrated; <span class="comment">% Nm</span>
+<span class="comment">% Cmech is between 310 and 250 from graph</span>
+<span class="comment">% choose Cmech = 300</span>
+Cmech = 300; <span class="comment">% kWs/m^3</span>
+fsync = 2*frated/pole; <span class="comment">% Hz</span>
+d2l = Prated*1e-3/(Cmech*fsync); <span class="comment">% m^3</span>
+aspect_ratio = (pi/pole)*(pole_pair)^(1/3);
+inner_diameter = (d2l/aspect_ratio)^(1/3); <span class="comment">% m</span>
+length = inner_diameter*aspect_ratio; <span class="comment">% m</span>
+inner_radius = inner_diameter/2; <span class="comment">% m</span>
+Ftan = torque/inner_radius; <span class="comment">% N</span>
+surface_area = pi*inner_diameter*length; <span class="comment">% m^2</span>
+sheer_stress = 1e-3*Ftan/surface_area; <span class="comment">% kPa</span>
+outer_diameter = 1.87*inner_diameter; <span class="comment">% for 6 pole</span>
+<span class="comment">% %60 increase for heavy duty</span>
+air_gap_distance = 1.6*(0.18+0.006*Prated^0.4); <span class="comment">% mm</span>
+circumference = pi*inner_diameter; <span class="comment">% m</span>
+
+magnetic_loading = 0.9; <span class="comment">% T</span>
+electric_loading = sheer_stress/magnetic_loading; <span class="comment">% kA/m</span>
+
+<span class="comment">% Electrical loading is checked from Table 6.2 of book</span>
+<span class="comment">% Tangential stress is checked from Table 6.3 of book</span>
+</pre><p>Choose:</p><pre class="codeinput">inner_diameter = 0.6; <span class="comment">% m</span>
+outer_diameter = 1.12; <span class="comment">% m</span>
+length = 0.45; <span class="comment">% m</span>
+air_gap_distance = 3; <span class="comment">% mm</span>
+surface_area = pi*inner_diameter*length; <span class="comment">% m^2</span>
+inner_volume = inner_diameter^2*length*pi/4; <span class="comment">% m^3</span>
+circumference = pi*inner_diameter; <span class="comment">% m</span>
+</pre><p>Check</p><pre class="codeinput">Ftan = torque/inner_radius; <span class="comment">% N</span>
+tan_stress = Ftan/surface_area; <span class="comment">% p</span>
+Cmech = Prated*1e-3/(inner_diameter^2*length*fsync); <span class="comment">% kWs/m^3</span>
+electric_loading = tan_stress/magnetic_loading*1e-3; <span class="comment">% kA/m</span>
+</pre><p>Slot number selection: slot_pitchs are 7-45 mm for asynchronous m/cs</p><pre class="codeinput">maximum_slot = circumference/0.007;
+minimum_slot = circumference/0.045;
+
+integer_multiple = phase*pole;
+<span class="keyword">for</span> k = 1:10
+    Qs = integer_multiple*k;
+    qs = Qs/(pole*phase);
+    <span class="keyword">if</span> Qs&lt;maximum_slot &amp;&amp; Qs&gt;minimum_slot
+        fprintf(<span class="string">'%d number of stator slots is available, qs = %d\n'</span>,Qs,qs);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Select Qs = 90 for the first iteration</span>
+Qs = 90;
+qs = Qs/(pole*phase);
+stator_slot_pitch = circumference/Qs; <span class="comment">% m</span>
+
+<span class="comment">% stator will be double layer for harmonic elimination</span>
+stator_layer = 2;
+<span class="comment">% Select pitch factor as 4/5pi electrical for 5th harmonic elimination</span>
+pitch_angle = 4*pi/5; <span class="comment">% radians electrical</span>
+slot_angle = pi/qs/phase; <span class="comment">% radians electrical</span>
+</pre><pre class="codeoutput">54 number of stator slots is available, qs = 3
+72 number of stator slots is available, qs = 4
+90 number of stator slots is available, qs = 5
+108 number of stator slots is available, qs = 6
+126 number of stator slots is available, qs = 7
+144 number of stator slots is available, qs = 8
+162 number of stator slots is available, qs = 9
+180 number of stator slots is available, qs = 10
+</pre><p>Stator winding factor (fundamental)</p><pre class="codeinput">[kd,kp,kw] = winding_factor_calc(slot_angle,qs,pitch_angle);
+kd1 = kd(1);
+kp1 = kp(1);
+kw1 = kw(1);
+</pre><p>selected flux densities (book, page: 283)</p><pre class="codeinput">Bgap = 0.9; <span class="comment">% T</span>
+Bsyoke = 1.6; <span class="comment">% T</span>
+Bstooth = 1.9; <span class="comment">% T</span>
+Bryoke = 1.6; <span class="comment">% T</span>
+Brtooth = 2.0; <span class="comment">% T</span>
+</pre><p>stator slot current</p><pre class="codeinput">Iu = stator_slot_pitch*electric_loading*1000; <span class="comment">% amps</span>
+<span class="comment">% number of turns per phase</span>
+Erms = Vphase; <span class="comment">% volts</span>
+flux_per_pole = 4*inner_radius*length*Bgap/pole; <span class="comment">% weber</span>
+Nph = Erms/(4.44*frated*flux_per_pole*kw1);
+
+<span class="comment">% number of turns/soil side</span>
+<span class="keyword">for</span> k = 1:5
+    zQ = k;
+    pos_Nph = qs*pole*stator_layer*zQ/2;
+    fprintf(<span class="string">'Possible Nph = %d, zQ = %d\n'</span>,pos_Nph,k);
+<span class="keyword">end</span>
+
+<span class="comment">% Among the alternatives, the closest turn number is 30 with zQ = 1</span>
+<span class="comment">% if 30 turns per phase is used, either of l,r or Bgap should be increased</span>
+<span class="comment">% if 60 turns per phase is used, either of l,r or Bgap should be decreased</span>
+<span class="comment">% in the first design, Nph = 30 is selected</span>
+
+Nph = 30;
+<span class="comment">% stator number of turns/coil side</span>
+zQ = 2*Nph/(qs*pole*stator_layer); <span class="comment">% turns</span>
+
+flux_per_pole = Erms/(4.44*frated*Nph*kw1); <span class="comment">% weber</span>
+Bgap = flux_per_pole*pole/(4*inner_radius*length); <span class="comment">% Tesla</span>
+
+<span class="comment">% The resultant Bgap is a little bit higher (0.9143 Tesla).</span>
+<span class="comment">% To decrease it, radius or length should be increased.</span>
+selected_Bgap = 0.9; <span class="comment">% Tesla</span>
+
+rl_multip_old = inner_radius*length; <span class="comment">% m^2</span>
+rl_multip = Erms*pole/(4.44*Nph*frated*kw1*4*selected_Bgap); <span class="comment">% m^2</span>
+
+new_length = 0.46; <span class="comment">% m</span>
+new_Bgap = Erms*pole/(4.44*Nph*frated*kw1*4*new_length*inner_radius); <span class="comment">% Tesla</span>
+new_surface_area = pi*inner_diameter*new_length; <span class="comment">% m^2</span>
+new_inner_volume = inner_diameter^2*new_length*pi/4; <span class="comment">% m^3</span>
+new_tan_stress = Ftan/new_surface_area; <span class="comment">% p</span>
+new_Cmech = Prated*1e-3/(inner_diameter^2*new_length*fsync); <span class="comment">% kWs/m^3</span>
+new_magnetic_loading = new_Bgap; <span class="comment">% Tesla</span>
+new_electric_loading = new_tan_stress/new_magnetic_loading*1e-3; <span class="comment">% kA/m</span>
+
+Bgap = new_Bgap; <span class="comment">% Tesl</span>
+flux_per_pole = Bgap*4*inner_radius*new_length/pole;
+</pre><pre class="codeoutput">Possible Nph = 30, zQ = 1
+Possible Nph = 60, zQ = 2
+Possible Nph = 90, zQ = 3
+Possible Nph = 120, zQ = 4
+Possible Nph = 150, zQ = 5
+</pre><p>Rotor slot number</p><pre class="codeinput">Qr = (6*qs+4)*pole_pair; <span class="comment">% eqn 7.115 of the book</span>
+avoid_rotor_slot(Qr,Qs,pole_pair);
+<span class="keyword">for</span> k = 1:10
+    Qr = k*pole*phase;
+    a = avoid_rotor_slot(Qr,Qs,pole_pair);
+    <span class="keyword">if</span> a == 1
+        fprintf(<span class="string">'%d rotor slot number is usable\n'</span>,Qr);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% In the book, 96,90,84 and 54 are suggested with one stator slot skew</span>
+<span class="comment">% Table 7.5</span>
+Qr = 72;
+qr = Qr/(pole*phase);
+<span class="comment">% harmful synchronous torque at steady state</span>
+</pre><pre class="codeoutput">18 rotor slot number is usable
+36 rotor slot number is usable
+54 rotor slot number is usable
+72 rotor slot number is usable
+108 rotor slot number is usable
+</pre><p>Stator winding selection</p><pre class="codeinput">fmax = vmax/vrated*frated; <span class="comment">% Hz</span>
+<span class="comment">% Normally, since the motor is to be driven by an inverter, the switching</span>
+<span class="comment">% frequency and corresponding harmonics should be taken into account for</span>
+<span class="comment">% skin effect. In this 1st iteration, only fundamental frequency will be</span>
+<span class="comment">% considered.</span>
+Pin = Prated/efficiency; <span class="comment">% watts</span>
+Irated = Pin/(sqrt(3)*Vrated*power_factor); <span class="comment">% amps</span>
+<span class="comment">% from awg wire table: AWG gauge starting from 000 is suitable considering</span>
+<span class="comment">% the frequency constraint (skin effect)</span>
+<span class="comment">% Select AWG wire gauge 000 which has a current rating of 239 amps</span>
+wire_current = 239; <span class="comment">% amps</span>
+wire_diameter = 10.404; <span class="comment">% mm</span>
+stator_strand = ceil(Irated/wire_current);
+<span class="comment">% three strands are required</span>
+wire_area = (wire_diameter/2)^2*pi; <span class="comment">% mm^2</span>
+stator_current_density = Irated/wire_area; <span class="comment">% A/mm^2</span>
+<span class="comment">% for a 6-pole machine, J = 7.76 is in the acceptable limits</span>
+
+<span class="comment">% With this current density, forced air cooling will be sufficienct</span>
+</pre><p>Stator slot sizing</p><pre class="codeinput">stator_fill_factor = 0.44; <span class="comment">% selected from the design example notes</span>
+useful_slot_area = wire_area*stator_strand*zQ*stator_layer; <span class="comment">% mm^2</span>
+<span class="comment">%stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2</span>
+stator_stacking_factor = 0.96; <span class="comment">% design example</span>
+Kfe = stator_stacking_factor;
+Tus = stator_slot_pitch*1e3; <span class="comment">% mm</span>
+bts = (Bgap*Tus)/(Bstooth*Kfe); <span class="comment">% mm</span>
+
+<span class="comment">% Select the other parameters:</span>
+bos = 4; <span class="comment">% mm</span>
+hos = 2; <span class="comment">% mm</span>
+hw = 3; <span class="comment">% mm</span>
+
+bs1 = pi*(inner_diameter*1e3+2*hos+2*hw)/Qs-bts; <span class="comment">% mm</span>
+bs2 = sqrt(4*useful_slot_area*tan(pi/Qs)+bs1^2); <span class="comment">% mm</span>
+hs = 2*useful_slot_area/(bs1+bs2); <span class="comment">% mm</span>
+hcs = (1e3*outer_diameter-(1e3*inner_diameter+2*(hos+hw+hs)))/2; <span class="comment">% mm</span>
+
+Bcs = flux_per_pole/(2*new_length*hcs*1e-3); <span class="comment">% T</span>
+<span class="comment">% The resultant yoke flux density is too low. Decrease outer diameter and</span>
+<span class="comment">% so that decrease hcs:</span>
+Bcs_new = 1.45; <span class="comment">% Tesla</span>
+hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; <span class="comment">% mm</span>
+outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; <span class="comment">% m</span>
+
+Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; <span class="comment">% grad</span>
+</pre><p>Rotor slot sizing</p><pre class="codeinput">rotor_slot_pitch = pi*(1e3*inner_diameter-2*air_gap_distance)/Qr; <span class="comment">% mm</span>
+Tur = rotor_slot_pitch; <span class="comment">% mm</span>
+
+KI = 0.8*power_factor+0.2;
+rotor_bar_current = KI*2*phase*Nph*kw1*Irated/Qr; <span class="comment">% amps</span>
+Ib = rotor_bar_current; <span class="comment">% amps</span>
+Jrotor = 6; <span class="comment">% A/mm^2</span>
+Aru = Ib/Jrotor; <span class="comment">% mm^2</span>
+Ier = Ib/(2*sin(2*pi/Qr)); <span class="comment">% A</span>
+Jer = 0.78*Jrotor; <span class="comment">% A/mm^2</span>
+Aer = Ier/Jer; <span class="comment">% mm^2</span>
+
+btr = Bgap*Tur/(Kfe*Brtooth); <span class="comment">% mm</span>
+
+<span class="comment">% Select the other parameters:</span>
+hor = 2; <span class="comment">% mm</span>
+bor = 4; <span class="comment">% mm</span>
+
+d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); <span class="comment">% mm</span>
+d2 = 3; <span class="comment">% mm</span>
+hr = (d1-d2)/(2*tan(pi/Qr)); <span class="comment">% mm</span>
+rotor_slot_area = (pi/8)*(d1^2+d2^2)+(d1+d2)*hr/2; <span class="comment">% mm^2</span>
+Ab = rotor_slot_area; <span class="comment">% mm^2</span>
+
+hcr = 1e3*flux_per_pole/(2*length*Bryoke); <span class="comment">% mm</span>
+
+Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); <span class="comment">% mm</span>
+</pre><p>Equivalent core length with cooling ducts</p><pre class="codeinput">nv = 10; <span class="comment">% number of cooling ducts</span>
+bv = 5; <span class="comment">% length of cooling duct, mm</span>
+g = air_gap_distance; <span class="comment">% mm</span>
+k = (bv/g)/(5+bv/g);
+bve = k*bv; <span class="comment">% mm</span>
+eqv_length = length-1e-3*nv*bve+1e-3*2*g; <span class="comment">% m</span>
+</pre><p>Carter's factor</p><pre class="codeinput">b1 = bs1; <span class="comment">% mm</span>
+k = (b1/g)/(5+b1/g);
+be = k*b1; <span class="comment">% mm</span>
+kcs = Tus/(Tus-be);
+
+k = (d1/g)/(5+d1/g);
+be = k*d1; <span class="comment">% mm</span>
+kcr = Tur/(Tur-be);
+
+geff = g*kcs*kcr; <span class="comment">% mm</span>
+</pre><p>Peak MMF</p><pre class="codeinput">F = (phase/2)*(4/pi)*(Nph*Irated*sqrt(2)/pole)*kw1; <span class="comment">% amps</span>
+u0 = 4*pi*1e-7;
+Bgapp = F*u0/(geff*1e-3);
+<span class="comment">% ?????????</span>
+</pre><p>Magnetizing inductance</p><pre class="codeinput">Lm = (phase/2)*inner_diameter*u0*eqv_length*(kw1*Nph)^2/(pole_pair^2*geff*1e-3); <span class="comment">% Henries</span>
+Xm = 2*pi*frated*Lm; <span class="comment">% Ohms</span>
+Imag = Vphase/Xm; <span class="comment">% amps</span>
+</pre><p>Stator Leakage inductance</p><pre class="codeinput">P1 = u0*eqv_length*((hos/bos)+(hs/(3*bs2))); <span class="comment">% permeance</span>
+Lph = P1*4*(Nph*kw1)^2*phase/Qs; <span class="comment">% Henries</span>
+Xph = 2*pi*frated*Lph; <span class="comment">% ohms</span>
+</pre><p>Rotor Leakage inductance</p><pre class="codeinput">Pr = 0.66 + 2*hr/(3*(d1+d2)) + hor/bor; <span class="comment">% permeance</span>
+Pdr = 0.9*Tur/(kcs*g)*1e-2; <span class="comment">% permeance</span>
+Kx = 1; <span class="comment">% skin effect coefficient</span>
+P2 = u0*eqv_length*(Kx*Pr+Pdr); <span class="comment">% permeance</span>
+Lrp = P2*4*(Nph*kw1)^2*phase/Qr; <span class="comment">% Henries</span>
+Xrp = 2*pi*frated*Lrp; <span class="comment">% ohms</span>
+</pre><p>Stator winding resistance</p><pre class="codeinput">pole_pitch = phase*stator_slot_pitch*qs; <span class="comment">% m</span>
+pitch_factor = pitch_angle/pi;
+y = pitch_factor*pole_pitch; <span class="comment">% m</span>
+lend = pi*y/2+0.018; <span class="comment">% m</span>
+le = 2*(length+lend); <span class="comment">% m</span>
+<span class="comment">% Use copper resistivity at 80 0C</span>
+rho_20 = 1.78*1e-8; <span class="comment">% ohm*m</span>
+rho_80 = rho_20*(1+1/273*(80-20)); <span class="comment">% ohm*m</span>
+Rsdc = rho_80*le*Nph/(1e-6*wire_area*stator_strand); <span class="comment">% ohms</span>
+Rsac = Rsdc; <span class="comment">% ohms</span>
+<span class="comment">% There is no skin effect</span>
+Rph = Rsac; <span class="comment">% ohms</span>
+</pre><p>Rotor bar resistance</p><pre class="codeinput">rho_al = 3.1*1e-8; <span class="comment">% ohm*m</span>
+rho_al_80 = rho_al*(1+1/273*(80-20)); <span class="comment">% ohm*m</span>
+Kr = 1.74;
+
+Dre = inner_radius-1e-3*g; <span class="comment">% m</span>
+b = hr+hor+(d1+d2)/2; <span class="comment">% mm</span>
+ler = 1e-3*pi*(Dre+b)/Qr; <span class="comment">% m</span>
+
+Rbe = rho_al_80*((length*Kr/(Ab*1e-6))+(ler/(2*Aer*1e-6*(sin(3*pi/Qr))^2))); <span class="comment">%ohms</span>
+R2p = Rbe*4*phase/Qr*(Nph*kw1)^2; <span class="comment">% ohms</span>
+</pre><p>Base values</p><pre class="codeinput">Vbase = Vrated; <span class="comment">% volts</span>
+Sbase = Prated/power_factor; <span class="comment">% VA</span>
+Zbase = Vrated^2/Sbase; <span class="comment">% ohms</span>
+</pre><p>pu values</p><pre class="codeinput">Xm_pu = 100*Xm/Zbase; <span class="comment">% percent</span>
+Xph_pu = 100*Xph/Zbase; <span class="comment">% percent</span>
+Xrp_pu = 100*Xrp/Zbase; <span class="comment">% percent</span>
+Rph_pu = 100*Rph/Zbase; <span class="comment">% percent</span>
+R2p_pu = 100*R2p/Zbase; <span class="comment">% percent</span>
+</pre><p>Copper Losses</p><pre class="codeinput">Pcus = 3*Irated^2*Rph; <span class="comment">% watts</span>
+Pcur = 3*Irated^2*R2p; <span class="comment">% watts</span>
+Pcu = Pcus + Pcur; <span class="comment">% watts</span>
+</pre><p>Copper mass</p><pre class="codeinput">copper_area = (1e-6*wire_area*stator_strand); <span class="comment">% m^2</span>
+copper_length = phase*le*Nph; <span class="comment">% m</span>
+copper_volume = copper_area*copper_length; <span class="comment">% m^3</span>
+copper_density = 8.96; <span class="comment">% gr/cm^3</span>
+copper_density = copper_density*1e3; <span class="comment">% kg/m^3</span>
+copper_mass = copper_density*copper_volume; <span class="comment">% kg</span>
+</pre><p>Aluminium mass</p><pre class="codeinput">aluminium_area1 = (1e-6*Ab); <span class="comment">% m^2</span>
+aluminium_area2 = (1e-6*Aer); <span class="comment">% m^2</span>
+aluminium_length1 = Qr*length; <span class="comment">% m</span>
+aluminium_length2 = Qr*ler; <span class="comment">% m</span>
+aluminium_volume = aluminium_area1*aluminium_length1 + aluminium_area2*aluminium_length2; <span class="comment">% m^3</span>
+aluminium_density = 2.70; <span class="comment">% gr/cm^3</span>
+aluminium_density = aluminium_density*1e3; <span class="comment">% kg/m^3</span>
+aluminium_mass = aluminium_density*aluminium_volume; <span class="comment">% kg</span>
+</pre><h2>Core losses<a name="54"></a></h2><p>stator teeth weight</p><pre class="codeinput">density_iron = 7800; <span class="comment">% kg/m^3</span>
+Gsteeth = density_iron*Qs*bts*1e-3*(hs+hw+hos)*1e-3*length*Kfe; <span class="comment">% kg</span>
+<span class="comment">% stator fundamental teeth core loss</span>
+Kt = 1.7;
+p10 = 2;
+Pc_stator_teeth1 = Kt*p10*(frated/50)^1.3*Bstooth^1.7*Gsteeth; <span class="comment">% watts</span>
+<span class="comment">% stator back iron weight</span>
+Gsyoke = density_iron*pi/4*(outer_diameter_new^2-(outer_diameter_new-2*hcs*1e-3)^2)*length*Kfe; <span class="comment">% kg</span>
+<span class="comment">% stator fundamental back iron core loss</span>
+Ky = 1.6;
+Pc_stator_yoke1 = Ky*p10*(frated/50)^1.3*Bsyoke^1.7*Gsyoke; <span class="comment">% watts</span>
+<span class="comment">% stator total core loss (fundamental)</span>
+Pcs1 = Pc_stator_teeth1+Pc_stator_yoke1; <span class="comment">% watts</span>
+
+<span class="comment">% rotor teeth weight</span>
+Grteeth = density_iron*Qr*btr*1e-3*(hr+(d1+d2)/2)*1e-3*length*Kfe; <span class="comment">% kg</span>
+<span class="comment">% stray losses</span>
+Kps = 1/(2.2-Bstooth);
+Kpr = 1/(2.2-Brtooth);
+Bps = (kcs-1)*Bgap; <span class="comment">% Tesla</span>
+Bpr = (kcr-1)*Bgap; <span class="comment">% Tesla</span>
+Piron_s = 0.5*1e-4*(Gsteeth*(Qr*frated/pole_pair*Kps*Bps)^2 + Grteeth*(Qs*frated/pole_pair*Kpr*Bpr)^2); <span class="comment">% watts</span>
+
+<span class="comment">%Pc = Pcs1 + Piron_s; % watts</span>
+Pc = Pcs1; <span class="comment">% watts</span>
+</pre><h2>Other losses<a name="55"></a></h2><pre class="codeinput">Pfw = 0.008*Prated; <span class="comment">% watts</span>
+</pre><h2>Efficiency<a name="56"></a></h2><pre class="codeinput">Ptotal = Pcu + Pc + Pfw; <span class="comment">% watts</span>
+efficiency = Prated/(Ptotal+Prated);
+</pre><p>??????????</p><pre class="codeinput">Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; <span class="comment">% grad</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% EE564 - Design of Electrical Machines
+%% Project-2: Asynchronous Traction Motor Design
+%% Name: Mesut Uğur
+%% ID: 1626753
+%% INTRODUCTION
+% In this project, we are asked to design a squirrel cage asynchronous motor
+% for a high power railway traction vehicle.
+%% 
+% This report is composed of the following sections:
+%
+% # Project specifications and selected main design inputs
+% # Calculation of main dimensions
+% # Selection of main dimensions and validation of machine loading
+% # Selection of stator slot number and turn numbers
+% # Validating the results and iterations
+% # Calculation of MMF, flux density, winding factors and the resultant
+% induced voltage
+% # Selection of rotor slot number
+% # Selection of stator and rotor conductors
+% # Calculation of stator slot and rotor bar dimensions
+% # Calculation of equivalent core length and effective air gap distance
+% # Calculation of winding and bar resistances, leakage inductances and
+% magnetizing inductance
+% # Calculation of copper and aluminium losses
+% # Calculation of copper and aluminium masses
+% # Calculation of iron mass
+% # Calculation of core losses and the core loss resistance of equivalent
+% circuit
+% # Calculation of stator to rotor turns ratio
+% # Calculation of efficiency
+% # Basic thermal analysis
+% # Conclusions
+% # References
+
+
+%%
+% Specifications
+%%
+% Traction asynchronous squirrel cage induction motor
+%%
+% Rated Power Output: 1280 kW
+%%
+% Line-to-line voltage: 1350 V
+%%
+% Number of poles: 6
+%%
+% Rated Speed: 1520 rpm (72 km/h) (driven with 78 Hz inverter)
+%%
+% Rated Motor Torque: 7843 Nm
+%%
+% Cooling: Forced Air Cooling
+%%
+% Insulating Class: 200
+%%
+% Train Wheel Diameter: 1210 mm
+%%
+% Maximum Speed: 140 km/h
+%%
+% Gear Ratio: 4.821
+%%
+% Duty: ?
+%%
+% Enclosure: ?
+%%
+% Efficiency: IE3, premium efficiency: 96 %
+%%
+% Efficiency: IE4, super premium efficiency: 97 %
+%%
+% Power factor: ?
+%%
+% IP54??
+%%
+% Class 200
+%%
+% N
+%%
+% Average winding temp rise: 130 degree C
+%%
+% Hot spot temp rise: 160 degree C
+%%
+% Maximum winding temp: 200 degree C
+
+
+%%
+% Design Inputs
+Prated = 1280e3; % watts
+pole = 6;
+pole_pair = pole/2;
+phase = 3;
+Vrated = 1350; % volts line-to-line
+Nrated = 1520; % rpm
+frated = 78; % Hz
+vrated = 72; % km/h
+vmax = 140; % km/h
+Trated = 7843; % Nm
+wheel_dia = 1.21; % m
+gear_ratio = 4.821;
+power_factor = 0.86; % assumed (not a given data)
+efficiency = 0.965; % assumed (not a given data)
+
+
+%%
+% Main dimensions: length, diameter, electrical and magnetic loading
+Vphase = Vrated/sqrt(3); % volts
+Nsync = 120*frated/pole; % rpm
+wrated = Nrated*2*pi/60; % rad/sec
+torque = Prated/wrated; % Nm
+% Cmech is between 310 and 250 from graph
+% choose Cmech = 300
+Cmech = 300; % kWs/m^3
+fsync = 2*frated/pole; % Hz
+d2l = Prated*1e-3/(Cmech*fsync); % m^3
+aspect_ratio = (pi/pole)*(pole_pair)^(1/3);
+inner_diameter = (d2l/aspect_ratio)^(1/3); % m
+length = inner_diameter*aspect_ratio; % m
+inner_radius = inner_diameter/2; % m
+Ftan = torque/inner_radius; % N
+surface_area = pi*inner_diameter*length; % m^2
+sheer_stress = 1e-3*Ftan/surface_area; % kPa
+outer_diameter = 1.87*inner_diameter; % for 6 pole
+% %60 increase for heavy duty
+air_gap_distance = 1.6*(0.18+0.006*Prated^0.4); % mm
+circumference = pi*inner_diameter; % m
+
+magnetic_loading = 0.9; % T
+electric_loading = sheer_stress/magnetic_loading; % kA/m
+
+% Electrical loading is checked from Table 6.2 of book
+% Tangential stress is checked from Table 6.3 of book
+
+
+%%
+% Choose:
+inner_diameter = 0.6; % m
+outer_diameter = 1.12; % m
+length = 0.45; % m
+air_gap_distance = 3; % mm
+surface_area = pi*inner_diameter*length; % m^2
+inner_volume = inner_diameter^2*length*pi/4; % m^3
+circumference = pi*inner_diameter; % m
+
+
+%%
+% Check
+Ftan = torque/inner_radius; % N
+tan_stress = Ftan/surface_area; % p
+Cmech = Prated*1e-3/(inner_diameter^2*length*fsync); % kWs/m^3
+electric_loading = tan_stress/magnetic_loading*1e-3; % kA/m
+
+
+%%
+% Slot number selection:
+% slot_pitchs are 7-45 mm for asynchronous m/cs
+maximum_slot = circumference/0.007;
+minimum_slot = circumference/0.045;
+
+integer_multiple = phase*pole;
+for k = 1:10
+    Qs = integer_multiple*k;
+    qs = Qs/(pole*phase);
+    if Qs<maximum_slot && Qs>minimum_slot 
+        fprintf('%d number of stator slots is available, qs = %d\n',Qs,qs);
+    end
+end
+
+% Select Qs = 90 for the first iteration
+Qs = 90;
+qs = Qs/(pole*phase);
+stator_slot_pitch = circumference/Qs; % m
+
+% stator will be double layer for harmonic elimination
+stator_layer = 2;
+% Select pitch factor as 4/5pi electrical for 5th harmonic elimination
+pitch_angle = 4*pi/5; % radians electrical
+slot_angle = pi/qs/phase; % radians electrical
+
+
+%%
+% Stator winding factor (fundamental)
+[kd,kp,kw] = winding_factor_calc(slot_angle,qs,pitch_angle);
+kd1 = kd(1);
+kp1 = kp(1);
+kw1 = kw(1);
+
+
+%%
+% selected flux densities (book, page: 283)
+Bgap = 0.9; % T
+Bsyoke = 1.6; % T
+Bstooth = 1.9; % T
+Bryoke = 1.6; % T
+Brtooth = 2.0; % T
+
+
+%%
+% stator slot current
+Iu = stator_slot_pitch*electric_loading*1000; % amps
+% number of turns per phase
+Erms = Vphase; % volts
+flux_per_pole = 4*inner_radius*length*Bgap/pole; % weber
+Nph = Erms/(4.44*frated*flux_per_pole*kw1);
+
+% number of turns/soil side
+for k = 1:5
+    zQ = k;
+    pos_Nph = qs*pole*stator_layer*zQ/2;
+    fprintf('Possible Nph = %d, zQ = %d\n',pos_Nph,k);
+end
+
+% Among the alternatives, the closest turn number is 30 with zQ = 1
+% if 30 turns per phase is used, either of l,r or Bgap should be increased
+% if 60 turns per phase is used, either of l,r or Bgap should be decreased
+% in the first design, Nph = 30 is selected
+
+Nph = 30;
+% stator number of turns/coil side
+zQ = 2*Nph/(qs*pole*stator_layer); % turns
+
+flux_per_pole = Erms/(4.44*frated*Nph*kw1); % weber
+Bgap = flux_per_pole*pole/(4*inner_radius*length); % Tesla
+
+% The resultant Bgap is a little bit higher (0.9143 Tesla).
+% To decrease it, radius or length should be increased.
+selected_Bgap = 0.9; % Tesla
+
+rl_multip_old = inner_radius*length; % m^2
+rl_multip = Erms*pole/(4.44*Nph*frated*kw1*4*selected_Bgap); % m^2
+
+new_length = 0.46; % m
+new_Bgap = Erms*pole/(4.44*Nph*frated*kw1*4*new_length*inner_radius); % Tesla
+new_surface_area = pi*inner_diameter*new_length; % m^2
+new_inner_volume = inner_diameter^2*new_length*pi/4; % m^3
+new_tan_stress = Ftan/new_surface_area; % p
+new_Cmech = Prated*1e-3/(inner_diameter^2*new_length*fsync); % kWs/m^3
+new_magnetic_loading = new_Bgap; % Tesla
+new_electric_loading = new_tan_stress/new_magnetic_loading*1e-3; % kA/m
+
+Bgap = new_Bgap; % Tesl
+flux_per_pole = Bgap*4*inner_radius*new_length/pole;
+
+
+%%
+% Rotor slot number
+
+Qr = (6*qs+4)*pole_pair; % eqn 7.115 of the book
+avoid_rotor_slot(Qr,Qs,pole_pair);
+for k = 1:10
+    Qr = k*pole*phase;
+    a = avoid_rotor_slot(Qr,Qs,pole_pair);
+    if a == 1
+        fprintf('%d rotor slot number is usable\n',Qr);
+    end
+end
+
+% In the book, 96,90,84 and 54 are suggested with one stator slot skew
+% Table 7.5
+Qr = 72;
+qr = Qr/(pole*phase);
+% harmful synchronous torque at steady state
+
+
+%%
+% Stator winding selection
+fmax = vmax/vrated*frated; % Hz
+% Normally, since the motor is to be driven by an inverter, the switching
+% frequency and corresponding harmonics should be taken into account for
+% skin effect. In this 1st iteration, only fundamental frequency will be
+% considered.
+Pin = Prated/efficiency; % watts
+Irated = Pin/(sqrt(3)*Vrated*power_factor); % amps
+% from awg wire table: AWG gauge starting from 000 is suitable considering
+% the frequency constraint (skin effect)
+% Select AWG wire gauge 000 which has a current rating of 239 amps
+wire_current = 239; % amps
+wire_diameter = 10.404; % mm
+stator_strand = ceil(Irated/wire_current);
+% three strands are required
+wire_area = (wire_diameter/2)^2*pi; % mm^2
+stator_current_density = Irated/wire_area; % A/mm^2
+% for a 6-pole machine, J = 7.76 is in the acceptable limits
+
+% With this current density, forced air cooling will be sufficienct
+
+
+%%
+% Stator slot sizing
+stator_fill_factor = 0.44; % selected from the design example notes
+useful_slot_area = wire_area*stator_strand*zQ*stator_layer; % mm^2
+%stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
+stator_stacking_factor = 0.96; % design example
+Kfe = stator_stacking_factor;
+Tus = stator_slot_pitch*1e3; % mm 
+bts = (Bgap*Tus)/(Bstooth*Kfe); % mm
+
+% Select the other parameters:
+bos = 4; % mm
+hos = 2; % mm
+hw = 3; % mm
+
+bs1 = pi*(inner_diameter*1e3+2*hos+2*hw)/Qs-bts; % mm
+bs2 = sqrt(4*useful_slot_area*tan(pi/Qs)+bs1^2); % mm
+hs = 2*useful_slot_area/(bs1+bs2); % mm
+hcs = (1e3*outer_diameter-(1e3*inner_diameter+2*(hos+hw+hs)))/2; % mm
+
+Bcs = flux_per_pole/(2*new_length*hcs*1e-3); % T
+% The resultant yoke flux density is too low. Decrease outer diameter and
+% so that decrease hcs:
+Bcs_new = 1.45; % Tesla
+hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; % mm
+outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; % m
+
+Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
+
+
+%%
+% Rotor slot sizing
+rotor_slot_pitch = pi*(1e3*inner_diameter-2*air_gap_distance)/Qr; % mm
+Tur = rotor_slot_pitch; % mm
+
+KI = 0.8*power_factor+0.2;
+rotor_bar_current = KI*2*phase*Nph*kw1*Irated/Qr; % amps
+Ib = rotor_bar_current; % amps
+Jrotor = 6; % A/mm^2
+Aru = Ib/Jrotor; % mm^2
+Ier = Ib/(2*sin(2*pi/Qr)); % A
+Jer = 0.78*Jrotor; % A/mm^2
+Aer = Ier/Jer; % mm^2
+
+btr = Bgap*Tur/(Kfe*Brtooth); % mm
+
+% Select the other parameters:
+hor = 2; % mm
+bor = 4; % mm
+
+d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); % mm
+d2 = 3; % mm
+hr = (d1-d2)/(2*tan(pi/Qr)); % mm
+rotor_slot_area = (pi/8)*(d1^2+d2^2)+(d1+d2)*hr/2; % mm^2
+Ab = rotor_slot_area; % mm^2
+
+hcr = 1e3*flux_per_pole/(2*length*Bryoke); % mm
+
+Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); % mm
+
+
+%%
+% Equivalent core length with cooling ducts
+nv = 10; % number of cooling ducts
+bv = 5; % length of cooling duct, mm
+g = air_gap_distance; % mm
+k = (bv/g)/(5+bv/g);
+bve = k*bv; % mm
+eqv_length = length-1e-3*nv*bve+1e-3*2*g; % m
+
+
+%%
+% Carter's factor
+b1 = bs1; % mm
+k = (b1/g)/(5+b1/g);
+be = k*b1; % mm
+kcs = Tus/(Tus-be);
+
+k = (d1/g)/(5+d1/g);
+be = k*d1; % mm
+kcr = Tur/(Tur-be);
+
+geff = g*kcs*kcr; % mm
+
+
+%%
+% Peak MMF
+F = (phase/2)*(4/pi)*(Nph*Irated*sqrt(2)/pole)*kw1; % amps
+u0 = 4*pi*1e-7;
+Bgapp = F*u0/(geff*1e-3);
+% ?????????
+
+
+%%
+% Magnetizing inductance
+Lm = (phase/2)*inner_diameter*u0*eqv_length*(kw1*Nph)^2/(pole_pair^2*geff*1e-3); % Henries
+Xm = 2*pi*frated*Lm; % Ohms
+Imag = Vphase/Xm; % amps
+
+
+%%
+% Stator Leakage inductance
+P1 = u0*eqv_length*((hos/bos)+(hs/(3*bs2))); % permeance
+Lph = P1*4*(Nph*kw1)^2*phase/Qs; % Henries
+Xph = 2*pi*frated*Lph; % ohms
+
+
+%%
+% Rotor Leakage inductance
+Pr = 0.66 + 2*hr/(3*(d1+d2)) + hor/bor; % permeance
+Pdr = 0.9*Tur/(kcs*g)*1e-2; % permeance
+Kx = 1; % skin effect coefficient
+P2 = u0*eqv_length*(Kx*Pr+Pdr); % permeance
+Lrp = P2*4*(Nph*kw1)^2*phase/Qr; % Henries
+Xrp = 2*pi*frated*Lrp; % ohms
+
+
+%%
+% Stator winding resistance
+pole_pitch = phase*stator_slot_pitch*qs; % m
+pitch_factor = pitch_angle/pi;
+y = pitch_factor*pole_pitch; % m
+lend = pi*y/2+0.018; % m
+le = 2*(length+lend); % m
+% Use copper resistivity at 80 0C
+rho_20 = 1.78*1e-8; % ohm*m
+rho_80 = rho_20*(1+1/273*(80-20)); % ohm*m
+Rsdc = rho_80*le*Nph/(1e-6*wire_area*stator_strand); % ohms
+Rsac = Rsdc; % ohms
+% There is no skin effect
+Rph = Rsac; % ohms
+
+
+%%
+% Rotor bar resistance
+rho_al = 3.1*1e-8; % ohm*m
+rho_al_80 = rho_al*(1+1/273*(80-20)); % ohm*m
+Kr = 1.74;
+
+Dre = inner_radius-1e-3*g; % m
+b = hr+hor+(d1+d2)/2; % mm
+ler = 1e-3*pi*(Dre+b)/Qr; % m
+
+Rbe = rho_al_80*((length*Kr/(Ab*1e-6))+(ler/(2*Aer*1e-6*(sin(3*pi/Qr))^2))); %ohms
+R2p = Rbe*4*phase/Qr*(Nph*kw1)^2; % ohms
+
+
+%%
+% Base values
+Vbase = Vrated; % volts
+Sbase = Prated/power_factor; % VA
+Zbase = Vrated^2/Sbase; % ohms
+
+
+%%
+% pu values
+Xm_pu = 100*Xm/Zbase; % percent
+Xph_pu = 100*Xph/Zbase; % percent
+Xrp_pu = 100*Xrp/Zbase; % percent
+Rph_pu = 100*Rph/Zbase; % percent
+R2p_pu = 100*R2p/Zbase; % percent
+
+
+%%
+% Copper Losses
+Pcus = 3*Irated^2*Rph; % watts
+Pcur = 3*Irated^2*R2p; % watts
+Pcu = Pcus + Pcur; % watts
+
+
+%%
+% Copper mass
+copper_area = (1e-6*wire_area*stator_strand); % m^2
+copper_length = phase*le*Nph; % m
+copper_volume = copper_area*copper_length; % m^3
+copper_density = 8.96; % gr/cm^3
+copper_density = copper_density*1e3; % kg/m^3
+copper_mass = copper_density*copper_volume; % kg
+
+
+%%
+% Aluminium mass
+aluminium_area1 = (1e-6*Ab); % m^2
+aluminium_area2 = (1e-6*Aer); % m^2
+aluminium_length1 = Qr*length; % m
+aluminium_length2 = Qr*ler; % m
+aluminium_volume = aluminium_area1*aluminium_length1 + aluminium_area2*aluminium_length2; % m^3
+aluminium_density = 2.70; % gr/cm^3
+aluminium_density = aluminium_density*1e3; % kg/m^3
+aluminium_mass = aluminium_density*aluminium_volume; % kg
+
+
+%% Core losses
+% stator teeth weight
+density_iron = 7800; % kg/m^3
+Gsteeth = density_iron*Qs*bts*1e-3*(hs+hw+hos)*1e-3*length*Kfe; % kg
+% stator fundamental teeth core loss
+Kt = 1.7;
+p10 = 2;
+Pc_stator_teeth1 = Kt*p10*(frated/50)^1.3*Bstooth^1.7*Gsteeth; % watts
+% stator back iron weight
+Gsyoke = density_iron*pi/4*(outer_diameter_new^2-(outer_diameter_new-2*hcs*1e-3)^2)*length*Kfe; % kg
+% stator fundamental back iron core loss
+Ky = 1.6;
+Pc_stator_yoke1 = Ky*p10*(frated/50)^1.3*Bsyoke^1.7*Gsyoke; % watts
+% stator total core loss (fundamental)
+Pcs1 = Pc_stator_teeth1+Pc_stator_yoke1; % watts
+
+% rotor teeth weight
+Grteeth = density_iron*Qr*btr*1e-3*(hr+(d1+d2)/2)*1e-3*length*Kfe; % kg
+% stray losses
+Kps = 1/(2.2-Bstooth);
+Kpr = 1/(2.2-Brtooth);
+Bps = (kcs-1)*Bgap; % Tesla
+Bpr = (kcr-1)*Bgap; % Tesla
+Piron_s = 0.5*1e-4*(Gsteeth*(Qr*frated/pole_pair*Kps*Bps)^2 + Grteeth*(Qs*frated/pole_pair*Kpr*Bpr)^2); % watts
+
+%Pc = Pcs1 + Piron_s; % watts
+Pc = Pcs1; % watts
+
+
+%% Other losses
+Pfw = 0.008*Prated; % watts
+
+
+%% Efficiency
+Ptotal = Pcu + Pc + Pfw; % watts
+efficiency = Prated/(Ptotal+Prated);
+
+
+%%
+% ??????????
+Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
+
+
+##### SOURCE END #####
+--></body></html>

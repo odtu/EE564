@@ -1,7 +1,37 @@
 %% EE564 - Design of Electrical Machines
-%% Project-2: Traction Motor Design
+%% Project-2: Asynchronous Traction Motor Design
 %% Name: Mesut Uður
 %% ID: 1626753
+%% INTRODUCTION
+% In this project, we are asked to design a squirrel cage asynchronous motor
+% for a high power railway traction vehicle.
+%% 
+% This report is composed of the following sections:
+%
+% # Project specifications and selected main design inputs
+% # Calculation of main dimensions
+% # Selection of main dimensions and validation of machine loading
+% # Selection of stator slot number and turn numbers
+% # Validating the results and iterations
+% # Calculation of MMF, flux density, winding factors and the resultant
+% induced voltage
+% # Selection of rotor slot number
+% # Selection of stator and rotor conductors
+% # Calculation of stator slot and rotor bar dimensions
+% # Calculation of equivalent core length and effective air gap distance
+% # Calculation of winding and bar resistances, leakage inductances and
+% magnetizing inductance
+% # Calculation of copper and aluminium losses
+% # Calculation of copper and aluminium masses
+% # Calculation of iron mass
+% # Calculation of core losses and the core loss resistance of equivalent
+% circuit
+% # Calculation of stator to rotor turns ratio
+% # Calculation of efficiency
+% # Basic thermal analysis
+% # Conclusions
+% # References
+
 
 %%
 % Specifications
