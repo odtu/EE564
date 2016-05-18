@@ -449,13 +449,54 @@ fprintf('The peak MMF is %g Amps\n',peak_MMF);
 % Now, the air gap flux density can be calculated from the simple magnetic
 % equivalent circuit loop with length = g and H = B/u0.
 u0 = 4*pi*1e-7;
-Bgap_expected = F*u0/(air_gap_distance*1e-3);
+Bgap_expected = peak_MMF*u0/(air_gap_distance*1e-3);
 fprintf('The expected peak flux density is %g Tesla with the given gap\n',Bgap_expected);
 %%
 % The resultant flux density is very very high! Actually, the path of the
 % magnetic circuit is not only composed of the air gap (in practice, the
 % cores are not infinitely permeable), moreover, the effective air gap
-% distance should be considered.
+% distance should be considered. Therefore, this result is lower in
+% practice.
+%%
+% Up to now, the Carter's coefficienct for effective air gap length
+% calculation is not calculated, but since it is directly related to the
+% slot opening, a slot opening value will be selected prematurely to
+% correct the air gap flux density. In addition, it will be assumed that, 5
+% % of the MMF is dropped on the core materials.
+actual_peak_MMF = peak_MMF*0.95; % amps
+stator_slot_opening = 4; % mm
+rotor_bar_opening = 4; % mm
+%%
+% Also, there will be another assumption on the rotor slot pitch for
+% Carter's coefficienct calculation. At this point, a lower number of bars
+% are assumed on the rotor (around 80 percent). Therefore, the rotor bar
+% pitch will be calculated accordingly:
+rotor_bar_pitch = stator_slot_pitch/0.8; % m
+k = (stator_slot_opening/air_gap_distance)/(5+stator_slot_opening/air_gap_distance);
+be = k*stator_slot_opening;
+kcs = stator_slot_pitch*1e3/(stator_slot_pitch*1e3-be);
+k = (rotor_bar_opening/air_gap_distance)/(5+rotor_bar_opening/air_gap_distance);
+be = k*rotor_bar_opening;
+kcr = rotor_bar_pitch*1e3/(rotor_bar_pitch*1e3-be);
+effective_air_gap_distance = air_gap_distance*kcs*kcr;
+Bgap_corrected = actual_peak_MMF*u0/(effective_air_gap_distance*1e-3);
+fprintf('Corrected air gap peak MMF is %g Amps\n',actual_peak_MMF);
+fprintf('Carters coefficient for stator (kcs) is %g\n',kcs);
+fprintf('Carters coefficient for rotor (kcr) is %g\n',kcr);
+fprintf('Effective air gap distance is %g\n',effective_air_gap_distance);
+fprintf('Corrected peak flux density is %g Tesla\n',Bgap_corrected);
+%%
+% The result show that, the air gap flux desity is still too high. This is
+% actually a design fail and caused by the utilization of air gap diatance
+% calculation formula provided by the book. When we combine the flux
+% density and MMF equations, we observe that the following modifications
+% can be considered to decrease flux density:
+%%
+% Pole number, phase number, winding factor cannot be changed.
+%%
+% Turn number should be increased. This is possible, but it will cause the
+% design to go to the very beginning.....
+
 
 
 %%
