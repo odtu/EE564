@@ -5,7 +5,7 @@
 %% INTRODUCTION
 % In this project, we are asked to design a squirrel cage asynchronous motor
 % for a high power railway traction vehicle.
-%% 
+%%
 % This report is composed of the following sections:
 %
 % # Project specifications and selected main design inputs
@@ -119,6 +119,8 @@ Nsync = 120*frated/pole; % rpm
 wrated = Nrated*2*pi/60; % rad/sec
 torque = Prated/wrated; % N
 power_pole_pair = Prated/pole_pair; % watts
+Pin = Prated/efficiency; % watts
+Irated = Pin/(sqrt(3)*Vrated*power_factor); % amps
 %%
 % Cmech is between 310 and 250 from graph given below. Initially,
 % Cmech = 300 is chosen
@@ -226,7 +228,7 @@ fprintf('Inner circumference = %g m\n',circumference);
 Ftan = torque/inner_radius; % N
 tan_stress = Ftan/surface_area; % P
 Cmech = Prated*1e-3/(inner_diameter^2*length*fsync); % kWs/m^3
-magnetic_loading = 0.9; % Tesla 
+magnetic_loading = 0.9; % Tesla
 electric_loading = tan_stress/magnetic_loading*1e-3; % kA/m
 fprintf('The resultant tangential stress = %g kPa\n',1e-3*tan_stress);
 fprintf('The resultant specific machine constant = %g kWs/m^3\n',Cmech);
@@ -251,7 +253,7 @@ integer_multiple = phase*pole;
 for k = 1:10
     Qs = integer_multiple*k;
     qs = Qs/(pole*phase);
-    if Qs<maximum_slot && Qs>minimum_slot 
+    if Qs<maximum_slot && Qs>minimum_slot
         fprintf('%d number of stator slots is available, qs = %d\n',Qs,qs);
     end
 end
@@ -494,9 +496,166 @@ fprintf('Corrected peak flux density is %g Tesla\n',Bgap_corrected);
 %%
 % Pole number, phase number, winding factor cannot be changed.
 %%
-% Turn number should be increased. This is possible, but it will cause the
-% design to go to the very beginning.....
+% Turn number should be decreased. This is possible, but it will cause the
+% design to go to the very beginning.
+%%
+% The air gap distance should be increased. This will be done to obtained
+% the acceptable air gap flux density.
 
+
+%% Correction of Air Gap Distance
+% I am not sure about this, because the original 3 mm air gap distance
+% seems reasonable at the first glance, and many of my friends selected air
+% gap distance as 3 mm or below. But, I saw that none of them checked the
+% MMF and see how much flux density occurs on the MMF.
+%%
+% There are of course trade-offs for choosing the suitable air gap distance.
+% Increasing the air gap leads to a decrease in eddy current losses and
+% rotor surface losses (and thus better efficiency) while it will yield
+% a higher magnetizing current.
+%%
+% Now, as the flux density is 3 times higher than the acceptable values, I
+% increase the air gap distance 3 times at first iteration. The effective
+% air gap distance is again calculated as follows.
+gap_distance_new = air_gap_distance*3.5; % mm
+rotor_bar_pitch = stator_slot_pitch/0.8; % m
+k = (stator_slot_opening/gap_distance_new)/(5+stator_slot_opening/gap_distance_new);
+be = k*stator_slot_opening;
+kcs = stator_slot_pitch*1e3/(stator_slot_pitch*1e3-be);
+k = (rotor_bar_opening/gap_distance_new)/(5+rotor_bar_opening/gap_distance_new);
+be = k*rotor_bar_opening;
+kcr = rotor_bar_pitch*1e3/(rotor_bar_pitch*1e3-be);
+effective_gap_distance_new = gap_distance_new*kcs*kcr;
+Bgap_corrected_new = actual_peak_MMF*u0/(effective_gap_distance_new*1e-3);
+fprintf('Carters coefficient for stator (kcs) is %g\n',kcs);
+fprintf('Carters coefficient for rotor (kcr) is %g\n',kcr);
+fprintf('Effective air gap distance is %g\n',effective_gap_distance_new);
+fprintf('Corrected peak flux density is %g Tesla\n',Bgap_corrected_new);
+%%
+% The desired air gap flux density (0.9 Tesla) is now achieved by an air
+% gap as high as 10.5 mm. Again, I am not sure if this is a reasonable air
+% gap, but the analytical calculations shows that it is.
+
+
+%% Rotor bar number selection
+% In our text book, the equation 7.115 is provided for rotor slot number
+% selection for a skew of one stator slot as follows:
+Qr_suggested = (6*qs+4)*pole_pair; % eqn 7.115 of the book
+fprintf('Suggested rotor slot number is %g.\n',Qr_suggested);
+%%
+% A more detailed analysis is required for the selection of rotor slot
+% number. There are various combinations (with the stator slot number)
+% that should be avoided. Some of the reasons are; limiting the synchronous
+% torques, avoiding synchronous torques created by slot harmonics,
+% avoiding synchronous torques during running, avoiding dangerous slot
+% harmonics, avoiding mechanical vibrations.
+%%
+% In the following routine, possible rotor slot numbers are obtained by the
+% use of pole and phase number and they are checked whether they should be
+% avoided or not.
+for k = 1:10
+    Qr = k*pole*phase;
+    p = pole_pair;
+    if Qr == Qs || Qr == 0.5*Qs || Qr == 2*Qs || Qr == Qs + 2*p ||...
+            Qr == Qs - 2*p || Qr == 2*Qs + 2*p || Qr == 2*Qs - 2*p ||...
+            Qr == Qs + p || Qr == Qs - p || Qr == 0.5*Qs + p ||...
+            Qr == 0.5*Qs - p || Qr > 1.25*Qs
+        result = 0;
+    else
+        for n = 1:10
+            if Qr == 6*p*n || Qr == 6*p*n + 2*p || Qr == 6*p*n - 2*p ||...
+                    Qr == 6*p*n + 1 || Qr == 6*p*n - 1 ||...
+                    Qr == 6*p*n + 2*p + 1 || Qr == 6*p*n + 2*p - 1 ||...
+                    Qr == 6*p*n - 2*p + 1 || Qr == 6*p*n - 2*p - 1 ||...
+                    Qr == 6*p*n + 2*p || Qr == 6*p*n - 2*p
+                result = 0;
+            else
+                result = 1;
+            end
+        end
+    end
+    if result == 1
+        fprintf('%d rotor slot number is usable\n',Qr);
+    end
+end
+%%
+% As it turns out, the suggested rotor slot number (102) is not usable.
+% among the alternatives, rotor slot number of 72 is selected.
+Qr = 72;
+qr = Qr/(pole*phase);
+fprintf('Selected rotor slot number is %g.\n',Qr);
+fprintf('Corresponding rotor number of slots per pole per phase is %g.\n',qr);
+%%
+% It should be noted that, this rotor slot number in combination with a
+% stator slot number of 90 may cause synchronous torques at standstill.
+
+
+%% Selection of stator and rotor conductors
+% First of all, copper conductors will be used for stator and aluminium
+% bars will be used for squirrel cage rotor. the selection of conductors is
+% based on two things: current carrying capability and frequency (skin
+% effect).
+%%
+% Stator copper conductor design:
+%%
+% The maximum fundamental frequency that the windings will be subjecdted to
+% can be calculated by the maximum speed of the train. The motor will be
+% driven by an inverter with possibly scalar control techniques with
+% variable voltage - variable frequency capability to adjust the speed of
+% the train.
+fmax = frated*vmax/vrated; % Hz
+fprintf('The maximum fundamental frequency that the stator windings will be subjected to is %g Hz.\n',fmax);
+%%
+% This approach is valid up to a point since only the fundamental
+% components are considered. A three phase inverter do not normally produce
+% low order harmonics by the utilization of sinusoidal pulse width
+% modulation techniques (SPWM). The harmonic frequencies that will show
+% will be around the switching frequency and its integer multiples. From
+% past experience, the converters around such kind of power ratings are
+% driven with switching frequencies up to 1 kHz (usually 800 Hz). In this
+% design, these harmonic components will be neglected for simplicity. One
+% reason is that, an induction motor is an inductive load such that, the
+% harmonics around 1 kHz are easily filtered and not reflected to the
+% current waveform.
+copper_resistivity = 1.7e-8; % Ohm*m
+copper_permeability = 1.256629e-6; % H/m
+angular_frequency = 2*pi*fmax; % rad/sec
+skin_depth = sqrt(copper_resistivity*2/(angular_frequency*copper_permeability));
+fprintf('Skin depth of Copper @ %g Hz is %g mm\n',fmax,skin_depth*1000);
+fprintf('A stator conductor diameter of which is not higher than %g mm should be selected.\n',2*skin_depth*1000);
+%%
+% The suggested current densities for a 6 pole machine is between 5-8
+% A/mm^2. In this design, forced air cooling will be used. A current
+% density of 7 A/mm^2 is feasible.
+current_density = 7; % A/mm^2
+copper_area = Irated/current_density; % mm^2
+copper_radius = sqrt(copper_area/pi); % mm
+copper_diameter = copper_radius*2; % mm
+fprintf('The selected current density is %g A/mm^2\n',current_density);
+fprintf('The resultant required wire area is %g mm^2\n',copper_area);
+fprintf('The minimum copper diameter that can be used is %g mm\n',copper_diameter);
+%%
+% From these results, standard "AWG gauge 0" is selected which has a
+% diameter of 8.25 mm and maximum frequency of 250 Hz. Two of these
+% conductors will be used in parallel.
+wire_diameter = 8.25246; % mm
+wire_radius = wire_diameter/2; % mm
+wire_strand = 2;
+wire_area = pi*wire_radius^2; % mm^2
+stator_current_density = Irated/(wire_area*wire_strand); % A/mm^2
+fprintf('Selected wire is AWG Gauge 0.\n');
+fprintf('Wire diameter is %g mm and area is %g mm^2.\n',wire_diameter,wire_area);
+fprintf('%g strands of wires will be used in parallel.\n',wire_strand);
+fprintf('The resultant current density is %g A/mm^2\n',stator_current_density);
+%%
+% The rotor bars will be aluminium. the skin effect is much 
+
+copper_resistivity = 1.7e-8; % Ohm*m
+copper_permeability = 1.256629e-6; % H/m
+angular_frequency = 2*pi*fmax; % rad/sec
+skin_depth = sqrt(copper_resistivity*2/(angular_frequency*copper_permeability));
+fprintf('Skin depth of Copper @ %g Hz is %g mm\n',fmax,skin_depth*1000);
+fprintf('A stator conductor diameter of which is not higher than %g mm should be selected.\n',2*skin_depth*1000);
 
 
 %%
@@ -504,48 +663,6 @@ fprintf('Corrected peak flux density is %g Tesla\n',Bgap_corrected);
 Iu = stator_slot_pitch*electric_loading*1000; % amps
 
 
-
-%%
-% Rotor slot number
-
-Qr = (6*qs+4)*pole_pair; % eqn 7.115 of the book
-avoid_rotor_slot(Qr,Qs,pole_pair);
-for k = 1:10
-    Qr = k*pole*phase;
-    a = avoid_rotor_slot(Qr,Qs,pole_pair);
-    if a == 1
-        fprintf('%d rotor slot number is usable\n',Qr);
-    end
-end
-
-% In the book, 96,90,84 and 54 are suggested with one stator slot skew
-% Table 7.5
-Qr = 72;
-qr = Qr/(pole*phase);
-% harmful synchronous torque at steady state
-
-
-%%
-% Stator winding selection
-fmax = vmax/vrated*frated; % Hz
-% Normally, since the motor is to be driven by an inverter, the switching
-% frequency and corresponding harmonics should be taken into account for
-% skin effect. In this 1st iteration, only fundamental frequency will be
-% considered.
-Pin = Prated/efficiency; % watts
-Irated = Pin/(sqrt(3)*Vrated*power_factor); % amps
-% from awg wire table: AWG gauge starting from 000 is suitable considering
-% the frequency constraint (skin effect)
-% Select AWG wire gauge 000 which has a current rating of 239 amps
-wire_current = 239; % amps
-wire_diameter = 10.404; % mm
-stator_strand = ceil(Irated/wire_current);
-% three strands are required
-wire_area = (wire_diameter/2)^2*pi; % mm^2
-stator_current_density = Irated/wire_area; % A/mm^2
-% for a 6-pole machine, J = 7.76 is in the acceptable limits
-
-% With this current density, forced air cooling will be sufficienct
 
 
 %%
@@ -555,7 +672,7 @@ useful_slot_area = wire_area*stator_strand*zQ*stator_layer; % mm^2
 %stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
 stator_stacking_factor = 0.96; % design example
 Kfe = stator_stacking_factor;
-Tus = stator_slot_pitch*1e3; % mm 
+Tus = stator_slot_pitch*1e3; % mm
 bts = (Bgap*Tus)/(Bstooth*Kfe); % mm
 
 % Select the other parameters:
