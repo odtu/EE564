@@ -186,7 +186,7 @@ magnetic_loading = 0.9; % T
 %%
 % The electric loading is obtained from this magnetic loading and
 % tangential stress information for validation.
-electric_loading = sheer_stress/magnetic_loading; % kA/m
+electric_loading = tan_stress/magnetic_loading; % kA/m
 fprintf('Selected magnetic loading is %g Tesla\n',magnetic_loading);
 fprintf('Resultant electric loading is %g kA/m\n',electric_loading);
 
@@ -411,7 +411,7 @@ fprintf('The resultant flux per pole is %g Weber\n',flux_per_pole);
 %%
 % The old and new multiplications of radius and length are as follows:
 rl_multip_old = inner_radius*length; % m^2
-rl_multip = Erms*pole/(4.44*Nph*frated*kw1*4*selected_Bgap); % m^2
+rl_multip = Erms*pole/(4.44*Nph*frated*kw1*4*Bgap); % m^2
 %%
 % The length of the machine is increased accordingly. The resultant new
 % machine parameters are also calculated for validation.
@@ -590,7 +590,7 @@ fprintf('Corresponding rotor number of slots per pole per phase is %g.\n',qr);
 % stator slot number of 90 may cause synchronous torques at standstill.
 
 
-%% Selection of stator and rotor conductors
+%% Selection of stator conductors
 % First of all, copper conductors will be used for stator and aluminium
 % bars will be used for squirrel cage rotor. the selection of conductors is
 % based on two things: current carrying capability and frequency (skin
@@ -648,58 +648,210 @@ fprintf('Wire diameter is %g mm and area is %g mm^2.\n',wire_diameter,wire_area)
 fprintf('%g strands of wires will be used in parallel.\n',wire_strand);
 fprintf('The resultant current density is %g A/mm^2\n',stator_current_density);
 %%
-% The rotor bars will be aluminium. the skin effect is much 
+% The conductors wounded on the stator slots will be indulated. This is
+% important for selection of the slot dimensions (required area of the
+% stator slots). The required insulation is selected as 2 % as a rule of
+% thumb.
+wire_diameter_insulation = wire_diameter*1.02; % mm
+wire_area_insulation = pi*(wire_diameter_insulation/2)^2; % mm^2
+total_stator_wire_area = wire_strand*wire_area_insulation; % mm^2
+fprintf('Wire diameter with insulation is %g mm and area is %g mm^2.\n',wire_diameter_insulation,wire_area_insulation);
+fprintf('Total wire area (one turn) is %g mm^2.\n',total_stator_wire_area);
 
-copper_resistivity = 1.7e-8; % Ohm*m
-copper_permeability = 1.256629e-6; % H/m
+
+%% Selection of rotor conductors
+% The rotor bars will be aluminium as stated before. From my research, I
+% saw that usually aluminium bars are used for squirrel cage rotors of
+% asynchronous machines. The production is usually achieved by die cast
+% aluminum poured into the rotor after the laminations are stacked.
+%%
+% The skin effect is much more relaxed at steady state operation for rotor
+% conductors because the rotor induced current frequency for low slip
+% values is very low. At standstill and startup, however, the frequency is
+% close to the stator frequency. The skin depth of aluminium is calculated
+% as follows:
+aluminium_resistivity = 2.65e-8; % Ohm*m
+aluminium_permeability = 1.256665e-6; % H/m
 angular_frequency = 2*pi*fmax; % rad/sec
-skin_depth = sqrt(copper_resistivity*2/(angular_frequency*copper_permeability));
-fprintf('Skin depth of Copper @ %g Hz is %g mm\n',fmax,skin_depth*1000);
-fprintf('A stator conductor diameter of which is not higher than %g mm should be selected.\n',2*skin_depth*1000);
+skin_depth_al = sqrt(aluminium_resistivity*2/(angular_frequency*aluminium_permeability));
+fprintf('Skin depth of Aluminium @ %g Hz is %g mm\n',fmax,skin_depth_al*1000);
+fprintf('A rotor conductor diameter of which is not higher than %g mm should be selected.\n',2*skin_depth_al*1000);
+%%
+% This information will be used for the calculation of rotor bar
+% resistance.
+%%
+% Since the frequency of the rotor windings are low, the induced voltages
+% in the squirrel cage winding is also very low. Therefore, no insulation
+% layer is required between the bars as well as between the bar and rotor
+% core.
+%%
+% As for the current carrying capability, as discussed before, the rotor
+% induced current will be low at steady state operations. Moreover, the
+% rotor bars are not like conventional conductors and have a much wider
+% area. Therefore, no other means of analysis is required for the rotor
+% bar current carrying capability. 
 
+
+%% Stator Slot Sizing
+% The first step selection of the stator slot fill factor. Generally, a
+% fill factor of between 0.4-0.44 is used for machines with such power
+% ratings. In this design, fill factor is selected as 0.44.
+stator_fill_factor = 0.44;
+%%
+% As the area that the conductors (with insulation) will utilize is known,
+% the useful slot area can be calculated.
+useful_slot_area = total_stator_wire_area*zQ*stator_layer/stator_fill_factor; % mm^2
+fprintf('Selected stator slot fill factor is %g\n',stator_fill_factor);
+fprintf('Useful slot area of the stator is %g mm^2\n',useful_slot_area);
+%%
+% The shape of the stator slot is selected as trapezoidal semiclosed shape.
+% In the figure below, the shape of the stator slot and the corresponding
+% dimensions are shown.
+
+I = imread('stator_slot.png');
+figure;
+imshow(I);
+title('stator Slot Shape and Dimensions','FontSize',18,'FontWeight','Bold');
 
 %%
-% stator slot current
-Iu = stator_slot_pitch*electric_loading*1000; % amps
-
-
-
-
-%%
-% Stator slot sizing
-stator_fill_factor = 0.44; % selected from the design example notes
-useful_slot_area = wire_area*stator_strand*zQ*stator_layer; % mm^2
-%stator_slot_area = useful_slot_area/stator_fill_factor; % mm^2
-stator_stacking_factor = 0.96; % design example
-Kfe = stator_stacking_factor;
+% The stator slot pitch (Tus) has already been calculated. First thing to
+% calculate is the stator slot tooth width (bts). For this, the flux passing
+% through one slot will be utilized. Assuming all the flux passes through
+% the slot teeth, one can write Equation 1. The stacking factor is selected
+% as 0.96. By using Equation 2 derived from equation 1:
 Tus = stator_slot_pitch*1e3; % mm
+stator_stacking_factor = 0.96;
+Kfe = stator_stacking_factor;
 bts = (Bgap*Tus)/(Bstooth*Kfe); % mm
-
-% Select the other parameters:
+fprintf('Stator slot pitch (Tus) is %g mm\n',Tus);
+fprintf('Stator stacking factor (Kfe) is %g mm\n',Kfe);
+fprintf('Stator slot tooth width (bts) is %g mm\n',bts);
+%%
+% Now, according to the information obtained up to now, some other
+% dimensions are chosen as follows:
 bos = 4; % mm
 hos = 2; % mm
 hw = 3; % mm
-
+fprintf('Stator slot opening width (bos) is %g mm\n',bos);
+fprintf('Stator slot opening height (hos) is %g mm\n',hos);
+%%
+% The bottom width (bs1) of the stator slot can now be calculated by the
+% use of circumference of the stator slot as shown in Equation 3.
 bs1 = pi*(inner_diameter*1e3+2*hos+2*hw)/Qs-bts; % mm
+fprintf('The bottom stator slot width (bs1) is %g mm\n',bs1);
+%%
+% The top width (bs2) and useful height (hs) of the stator slot can now
+% be calculated by the use of: 1) required slot area, 2) bottom width (bs1)
+% of the stator slot. Using Equations 4 and 5, Equation 6 can be derived.
 bs2 = sqrt(4*useful_slot_area*tan(pi/Qs)+bs1^2); % mm
+%%
+% By using Equation 4, Equation 7 can be derived.
 hs = 2*useful_slot_area/(bs1+bs2); % mm
+fprintf('The top stator slot width (bs2) is %g mm\n',bs2);
+fprintf('The useful stator slot height (hs) is %g mm\n',hs);
+%%
+% For the calculation of the height of the stator back iron or yoke (hcs),
+% the dimansions that have been established so far can be utilized. Outer
+% diameter, inner diameter, and slot dimensions are known. By Equation 8:
 hcs = (1e3*outer_diameter-(1e3*inner_diameter+2*(hos+hw+hs)))/2; % mm
-
+fprintf('The height of stator back iron is (hcs) is %g mm\n',hcs);
+%%
+% Now, the flux densities at the different parts of the core should be
+% verified to avoid saturation! for the stator teeth, the design was based
+% on the flux density, so no verification is required. For the back iron,
+% flux density is calculated as follows.
 Bcs = flux_per_pole/(2*new_length*hcs*1e-3); % T
-% The resultant yoke flux density is too low. Decrease outer diameter and
-% so that decrease hcs:
+fprintf('The aimed stator back iron flux density was %g Tesla and the resultant values is %g Tesla.\n',Bsyoke,Bcs);
+%%
+% The resultant yoke flux density is too low. This is actually a turning
+% point for the design.
+%%
+% Low back iron flux density is actually good because there is no risk of
+% saturation and more importantly, the core loss is expected to be less.
+%%
+% To increase the back iron flux density, the outer diameter can be
+% decreased. This time, the mass of the core will be decreased, so that the
+% core loss is also decrased.
+%%
+% All in all, a low flux density may or may not yield a decrease on the
+% core loss.
+%%
+% A new outer diameter will be calculated to meet the aimed yoke flux
+% density, but which outer diameter to be used will be decided later.
 Bcs_new = 1.45; % Tesla
-hcs_new = flux_per_pole/(2*length*Bcs_new)*1e3; % mm
+hcs_new = flux_per_pole/(2*length*Bcs_new*1e-3); % mm
 outer_diameter_new = (2*hcs_new+(1e3*inner_diameter+2*(hos+hw+hs)))*1e-3; % m
+fprintf('The aimed stator back iron flux density is %g Tesla.\n',Bcs_new);
+fprintf('The new back iron height is %g mm.\n',hcs_new);
+fprintf('The new outer diameter is %g m.\n',outer_diameter_new);
 
-Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
 
+%% Stator MMFS
+% The B-H data of the selected core lamination iron is shown in the figure
+% below.
+
+I = imread('B H.png');
+figure;
+imshow(I);
+title('B H Data of the Selected Iron Core Lamination','FontSize',18,'FontWeight','Bold');
 
 %%
-% Rotor slot sizing
+% The stator teeth MMF and back iron MMF can be calculated by using the
+% selected tooth and yoke flux density.
+Hts = 15220; % A/m
+MMFts = Hts*1e-3*(hs+hos+hw); % Amps
+fprintf('The magnetic field intensity of the stator teeth is %g A/m.\n',Hts);
+fprintf('The peak MMF of the teeth is %g A.\n',MMFts);
+Hys = 2460; % A/m
+MMFys = Hys*1e-3*(hcs); % Amps
+fprintf('The magnetic field intensity of the stator yoke is %g A/m.\n',Hys);
+fprintf('The peak MMF of the yoke is %g A.\n',MMFys);
+
+
+%% Rotor Bar Sizing
+% The fill factor of the rotor bars will be 1 since the bars are filled
+% with totally aluminium.
+%%
+% The shape of the rotor slot is selected.
+% In the figure below, the shape of the rotor slot and the corresponding
+% dimensions are shown.
+ 
+I = imread('rotor_slot.png');
+figure;
+imshow(I);
+title('Rotor Slot Shape and Dimensions','FontSize',18,'FontWeight','Bold');
+
+%%
+% The rotor slot pitch (Tur) can be calculated as follows similarly.
 rotor_slot_pitch = pi*(1e3*inner_diameter-2*air_gap_distance)/Qr; % mm
 Tur = rotor_slot_pitch; % mm
-
+fprintf('Rotor slot pitch (Tur) is %g mm\n',Tur);
+%%
+% The rotor slot tooth width (btr) is also calculated with the same method, 
+% by using the tooth flux density information. Assuming all the flux
+% passes through the slot teeth, one can write Equation 9. The stacking
+% factor is the same.
+rotor_stacking_factor = 0.96;
+Kfe = rotor_stacking_factor;
+btr = (Bgap*Tur)/(Brtooth*Kfe); % mm
+fprintf('Rotor stacking factor (Kfe) is %g\n',Kfe);
+fprintf('Rotor slot tooth width (btr) is %g mm\n',btr);
+%%
+% Now, according to the information obtained up to now, some other
+% dimensions are chosen as follows:
+hor = 2; % mm
+bor = 4; % mm
+fprintf('Rotor slot opening width (bor) is %g mm\n',bor);
+fprintf('Rotor slot opening height (hor) is %g mm\n',hor);
+%%
+% Calculation of the required slot area is again based on the current
+% requirement. The bar current on the rotor can be calculated by using
+% Equation 10. The current density on the rotor bar is selected as 6
+% A/mm^2. By that information, the rotor slot area is calculated based on
+% Equation 11. The end ring current of the rotor is calculated basen on
+% Equation 12. The current density of the end rings should be selected
+% small. Here, it is selected 78 % of the bar current density. The end ring
+% area is calculated based on Equation 13.
 KI = 0.8*power_factor+0.2;
 rotor_bar_current = KI*2*phase*Nph*kw1*Irated/Qr; % amps
 Ib = rotor_bar_current; % amps
@@ -708,144 +860,184 @@ Aru = Ib/Jrotor; % mm^2
 Ier = Ib/(2*sin(2*pi/Qr)); % A
 Jer = 0.78*Jrotor; % A/mm^2
 Aer = Ier/Jer; % mm^2
-
-btr = Bgap*Tur/(Kfe*Brtooth); % mm
-
-% Select the other parameters:
-hor = 2; % mm
-bor = 4; % mm
-
+fprintf('Rotor bar current is %g A.\n',Ib);
+fprintf('Rotor bar current density is %g A/mm^2.\n',Jrotor);
+fprintf('Rotor bar slot area is %g mm^2.\n',Aru);
+fprintf('Rotor end ring current is %g A.\n',Ier);
+fprintf('Rotor end ring current density is %g A/mm^2.\n',Jer);
+fprintf('Rotor end ring area is %g mm^2.\n',Aer);
+%%
+% The top rotor bar diameter (d1) is calculated based on Equation 14.
 d1 = (pi*(1e3*inner_diameter-2*air_gap_distance-2*hor)-Qr*btr)/(pi+Qr); % mm
+%%
+% The bottom rotor bar diameter (d2) and the rotor slot height (hr) are
+% are calculated based on Equations 15 and 16 by utilizing the
+% predetermined rotor slot area information.
 d2 = 3; % mm
 hr = (d1-d2)/(2*tan(pi/Qr)); % mm
 rotor_slot_area = (pi/8)*(d1^2+d2^2)+(d1+d2)*hr/2; % mm^2
 Ab = rotor_slot_area; % mm^2
-
-hcr = 1e3*flux_per_pole/(2*length*Bryoke); % mm
-
-Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); % mm
-
-
+fprintf('Rotor bar top diameter (d1) is %g mm.\n',d1);
+fprintf('Rotor bar bottom diameter (d2) %g mm.\n',d2);
+fprintf('Rotor bar height (hr) %g mm.\n',hr);
+fprintf('Rotor slot area is %g mm^2.\n',Ab);
 %%
-% Equivalent core length with cooling ducts
+% The resultant rotor slot area is much sufficient to carry the current.
+% Next is the calculation of rotor back core height (hcr). A similar
+% procedure can be applied (Equation 17).
+hcr = 1e3*flux_per_pole/(2*length*Bryoke); % mm
+fprintf('The height of the rotor back iron (hcr) is %g mm.\n',hcr);
+%%
+% Finally, the shaft diameter should be determined. The maximum shaft
+% diameter can be calculated by using the Equation 18.
+Dshaftmax = inner_diameter*1e3-2*air_gap_distance-2*(hor+hr+hcr+(d1+d2)/2); % mm
+fprintf('The maximum shaft diameter is %g mm.\n',Dshaftmax);
+Dshaft = 150; % mm
+fprintf('A shaft diameter of %g mm is selected.\n',Dshaft);
+
+
+%% Equivalent core length with cooling
 nv = 10; % number of cooling ducts
 bv = 5; % length of cooling duct, mm
-g = air_gap_distance; % mm
+g = gap_distance_new; % mm
 k = (bv/g)/(5+bv/g);
 bve = k*bv; % mm
 eqv_length = length-1e-3*nv*bve+1e-3*2*g; % m
+fprintf('Number of cooling ducts is %g.\n',nv);
+fprintf('Length of a cooling duct is %g mm.\n',bv);
+fprintf('The euivalent core length with cooling ducts is %g m.\n',eqv_length);
 
 
-%%
-% Carter's factor
+%% Effective air gap length
+g = gap_distance_new; % mm
 b1 = bs1; % mm
 k = (b1/g)/(5+b1/g);
 be = k*b1; % mm
 kcs = Tus/(Tus-be);
-
 k = (d1/g)/(5+d1/g);
 be = k*d1; % mm
 kcr = Tur/(Tur-be);
-
 geff = g*kcs*kcr; % mm
+fprintf('Carters coefficienct for stator is %g.\n',kcs);
+fprintf('Carters coefficienct for rotor is %g.\n',kcr);
+fprintf('The effective air gap length is %g mm.\n',geff);
 
 
-%%
-% Peak MMF
-F = (phase/2)*(4/pi)*(Nph*Irated*sqrt(2)/pole)*kw1; % amps
-u0 = 4*pi*1e-7;
-Bgapp = F*u0/(geff*1e-3);
-% ?????????
+%% Rotor MMFS
+% Same B-H data can be used. The rotor teeth MMF and back iron MMF can be
+% calculated by using the selected tooth and yoke flux density.
+Htr = 15220; % A/m
+MMFtr = Htr*1e-3*(hr+hor+(d1+d2)/2); % Amps
+fprintf('The magnetic field intensity of the rotor teeth is %g A/m.\n',Htr);
+fprintf('The peak MMF of the teeth is %g A.\n',MMFtr);
+Hyr = 2460; % A/m
+MMFyr = Hyr*1e-3*(hcr); % Amps
+fprintf('The magnetic field intensity of the rotor yoke is %g A/m.\n',Hyr);
+fprintf('The peak MMF of the yoke is %g A.\n',MMFyr);
 
 
-%%
-% Magnetizing inductance
-Lm = (phase/2)*inner_diameter*u0*eqv_length*(kw1*Nph)^2/(pole_pair^2*geff*1e-3); % Henries
+%% Magnetizing Inductance and Current
+% Calculation of the magnetizing inductance is based on the equation
+% derived in class. The magnetizing reactance is also calculated at rated
+% frequency. Finally, neglecting the core loss in the equivalent circuit,
+% the magnetizing current is calculated.
+Lm = (phase/2)*inner_diameter*u0*eqv_length*(kw1*Nph)^2/(pole_pair^2*air_gap_distance*1e-3); % Henries
 Xm = 2*pi*frated*Lm; % Ohms
-Imag = Vphase/Xm; % amps
+Imag = Erms/Xm; % amps
+fprintf('The magnetizing inductance of the machine is %g mH.\n',Lm*1e3);
+fprintf('The magnetizing reactance at fundamental frequency is %g Ohms.\n',Xm);
+fprintf('The magnetizing current is %g A.\n',Imag);
 
 
-%%
-% Stator Leakage inductance
+%% Leakage Inductances
+% Calculation of stator leakage inductance is again based on the equation
+% derived in class. The leakage reactance is also calculated at rated
+% frequency. 
 P1 = u0*eqv_length*((hos/bos)+(hs/(3*bs2))); % permeance
 Lph = P1*4*(Nph*kw1)^2*phase/Qs; % Henries
 Xph = 2*pi*frated*Lph; % ohms
-
-
-%%
-% Rotor Leakage inductance
+fprintf('The stator leakage inductance of the machine is %g uH.\n',Lph*1e6);
+fprintf('The stator leakage reactance at fundamental frequency is %g mOhms.\n',Xph*1e3);
+% Calculation of rotor leakage inductance is a little more tricky because
+% both rotor bar and end ring permeances are considered this time.
+% The leakage reactance is also calculated at rated frequency. 
 Pr = 0.66 + 2*hr/(3*(d1+d2)) + hor/bor; % permeance
 Pdr = 0.9*Tur/(kcs*g)*1e-2; % permeance
 Kx = 1; % skin effect coefficient
 P2 = u0*eqv_length*(Kx*Pr+Pdr); % permeance
 Lrp = P2*4*(Nph*kw1)^2*phase/Qr; % Henries
 Xrp = 2*pi*frated*Lrp; % ohms
+fprintf('The rotor leakage inductance referred to the stator is %g uH.\n',Lrp*1e6);
+fprintf('The rotor leakage reactance referred to the stator is %g mOhms.\n',Xrp*1e3);
 
 
-%%
-% Stator winding resistance
+%% Stator copper winding and rotor bar resistance
+% For the calculation of stator winding resistance of one phase, its length
+% is first calculated considering both machine length and end windings.
 pole_pitch = phase*stator_slot_pitch*qs; % m
 pitch_factor = pitch_angle/pi;
 y = pitch_factor*pole_pitch; % m
 lend = pi*y/2+0.018; % m
 le = 2*(length+lend); % m
-% Use copper resistivity at 80 0C
+fprintf('The stator pole pitch is %g m.\n',pole_pitch);
+fprintf('The stator pitch factor is %g.\n',pitch_factor);
+fprintf('The resultant end winding length is %g m.\n',lend);
+fprintf('The mean length turn (MLT) of stator is %g m.\n',le);
+%%
+% Copper resistivity at 80 0C is used. the winding area is also known.
 rho_20 = 1.78*1e-8; % ohm*m
 rho_80 = rho_20*(1+1/273*(80-20)); % ohm*m
-Rsdc = rho_80*le*Nph/(1e-6*wire_area*stator_strand); % ohms
+Rsdc = rho_80*le*Nph/(1e-6*wire_area*wire_strand); % ohms
 Rsac = Rsdc; % ohms
-% There is no skin effect
 Rph = Rsac; % ohms
-
-
+fprintf('The copper resistivity at 80 0C is %g Ohm.m.\n',rho_80);
+fprintf('The DC resiatance of the stator phase winding is %g mOhms.\n',Rsdc*1e3);
+fprintf('As the wire is selected considering skin effect, the AC resistance will be the same.\n');
+fprintf('The AC resiatance of the stator phase winding is %g mOhms.\n',Rsac*1e3);
 %%
-% Rotor bar resistance
+% The calculation of rotor bar resistance is similar.
 rho_al = 3.1*1e-8; % ohm*m
 rho_al_80 = rho_al*(1+1/273*(80-20)); % ohm*m
 Kr = 1.74;
-
 Dre = inner_radius-1e-3*g; % m
 b = hr+hor+(d1+d2)/2; % mm
 ler = 1e-3*pi*(Dre+b)/Qr; % m
-
 Rbe = rho_al_80*((length*Kr/(Ab*1e-6))+(ler/(2*Aer*1e-6*(sin(3*pi/Qr))^2))); %ohms
 R2p = Rbe*4*phase/Qr*(Nph*kw1)^2; % ohms
+fprintf('The end winding length is %g m.\n',ler);
+fprintf('The aluminium resistivity at 80 0C is %g Ohm.m.\n',rho_al_80);
+fprintf('The resiatance of the rotor phase winding is %g uOhms.\n',Rbe*1e6);
+fprintf('The rotor resistance referred to the stator is %g mOhms.\n',R2p*1e3);
 
 
-%%
+%% The per unit values
 % Base values
 Vbase = Vrated; % volts
 Sbase = Prated/power_factor; % VA
-Zbase = Vrated^2/Sbase; % ohms
-
-
-%%
+Zbase = Vbase^2/Sbase; % ohms
 % pu values
 Xm_pu = 100*Xm/Zbase; % percent
 Xph_pu = 100*Xph/Zbase; % percent
 Xrp_pu = 100*Xrp/Zbase; % percent
 Rph_pu = 100*Rph/Zbase; % percent
 R2p_pu = 100*R2p/Zbase; % percent
+fprintf('The stator winding resistance pu is %g %%.\n',Rph_pu);
+fprintf('The rotor winding resistance pu is %g %%.\n',R2p_pu);
+fprintf('The stator leakage reactance pu is %g %%.\n',Xph_pu);
+fprintf('The rotor leakage reactance pu is %g %%.\n',Xrp_pu);
+fprintf('The magnetizing reactance pu is %g %%.\n',Xm_pu);
 
 
-%%
-% Copper Losses
-Pcus = 3*Irated^2*Rph; % watts
-Pcur = 3*Irated^2*R2p; % watts
-Pcu = Pcus + Pcur; % watts
-
-
-%%
+%% Mass Calculations
 % Copper mass
-copper_area = (1e-6*wire_area*stator_strand); % m^2
+copper_area = (1e-6*wire_area*wire_strand); % m^2
 copper_length = phase*le*Nph; % m
 copper_volume = copper_area*copper_length; % m^3
 copper_density = 8.96; % gr/cm^3
 copper_density = copper_density*1e3; % kg/m^3
 copper_mass = copper_density*copper_volume; % kg
-
-
-%%
+fprintf('Total copper volume is %g m^3.\n',copper_volume);
+fprintf('Total copper mass is %g kg.\n',copper_mass);
 % Aluminium mass
 aluminium_area1 = (1e-6*Ab); % m^2
 aluminium_area2 = (1e-6*Aer); % m^2
@@ -855,47 +1047,136 @@ aluminium_volume = aluminium_area1*aluminium_length1 + aluminium_area2*aluminium
 aluminium_density = 2.70; % gr/cm^3
 aluminium_density = aluminium_density*1e3; % kg/m^3
 aluminium_mass = aluminium_density*aluminium_volume; % kg
+fprintf('Total aluminium volume is %g m^3.\n',aluminium_volume);
+fprintf('Total aluminium mass is %g kg.\n',aluminium_mass);
+% Stator iron (core) mass 
+density_iron = 7800; % kg/m^3
+Gsteeth = density_iron*Qs*bts*1e-3*(hs+hw+hos)*1e-3*length*Kfe; % kg
+fprintf('Stator teeth iron mass is %g kg.\n',Gsteeth);
+Gsyoke = density_iron*pi/4*(outer_diameter_new^2-(outer_diameter_new-2*hcs*1e-3)^2)*length*Kfe; % kg
+fprintf('Stator back iron mass is %g kg.\n',Gsyoke);
+Gs = Gsteeth+Gsyoke; % kg
+fprintf('Stator total iron mass is %g kg.\n',Gs);
+% Rotor iron (core) mass 
+Grteeth = density_iron*Qr*btr*1e-3*(hr+(d1+d2)/2)*1e-3*length*Kfe; % kg
+fprintf('Rotor teeth iron mass is %g kg.\n',Grteeth);
+total_mass = Gs + aluminium_mass + copper_mass + Grteeth; % kg
+fprintf('Total mass is %g kg.\n',total_mass);
+
+
+%% Copper Losses
+Pcus = 3*Irated^2*Rph; % watts
+Pcur = 3*Irated^2*R2p; % watts
+Pcu = Pcus + Pcur; % watts
+fprintf('Total stator copper loss is %g Watts.\n',Pcus);
+fprintf('Total rotor copper loss is %g Watts.\n',Pcur);
+fprintf('Total copper loss is %g Watts.\n',Pcu);
 
 
 %% Core losses
-% stator teeth weight
-density_iron = 7800; % kg/m^3
-Gsteeth = density_iron*Qs*bts*1e-3*(hs+hw+hos)*1e-3*length*Kfe; % kg
 % stator fundamental teeth core loss
 Kt = 1.7;
 p10 = 2;
 Pc_stator_teeth1 = Kt*p10*(frated/50)^1.3*Bstooth^1.7*Gsteeth; % watts
-% stator back iron weight
-Gsyoke = density_iron*pi/4*(outer_diameter_new^2-(outer_diameter_new-2*hcs*1e-3)^2)*length*Kfe; % kg
 % stator fundamental back iron core loss
 Ky = 1.6;
 Pc_stator_yoke1 = Ky*p10*(frated/50)^1.3*Bsyoke^1.7*Gsyoke; % watts
 % stator total core loss (fundamental)
 Pcs1 = Pc_stator_teeth1+Pc_stator_yoke1; % watts
-
-% rotor teeth weight
-Grteeth = density_iron*Qr*btr*1e-3*(hr+(d1+d2)/2)*1e-3*length*Kfe; % kg
-% stray losses
-Kps = 1/(2.2-Bstooth);
-Kpr = 1/(2.2-Brtooth);
-Bps = (kcs-1)*Bgap; % Tesla
-Bpr = (kcr-1)*Bgap; % Tesla
-Piron_s = 0.5*1e-4*(Gsteeth*(Qr*frated/pole_pair*Kps*Bps)^2 + Grteeth*(Qs*frated/pole_pair*Kpr*Bpr)^2); % watts
-
-%Pc = Pcs1 + Piron_s; % watts
+fprintf('stator core loss only at fundamental frequency is %g Watts.\n',Pcs1);
+%%
+% Normally, core loss at both harmonics caused by both the inverter and the
+% machine should be considered. In this design, they are not included.
 Pc = Pcs1; % watts
 
 
-%% Other losses
+%% Friction and Windage Losses
+% Here, only an assumption is used based on the design example.
 Pfw = 0.008*Prated; % watts
 
 
-%% Efficiency
+%% Total loss and Efficiency
 Ptotal = Pcu + Pc + Pfw; % watts
 efficiency = Prated/(Ptotal+Prated);
+fprintf('Total loss of the machine is %g Watts.\n',Ptotal);
+fprintf('Efficiency of the machine is %g %%.\n',100*efficiency);
 
 
+%% Core loss resistance
+Rc = Erms^2/(Pc/3); % Ohms
+fprintf('The core loss resistance is %g Ohms.\n',Rc);
+
+
+%% Equivalent Circuit
+% The resultant equivalent circuit is shown in the figure below at rated
+% frequency of operation.
+I = imread('eqv_circ.png');
+figure;
+imshow(I);
+title('Equivalent Circuit of the Machine','FontSize',18,'FontWeight','Bold');
+
+
+%% Torque-Speed Characteristics
+% Obtain the variables that will be used in the torque equation:
+wsync = Nsync*2*pi/60; % rad/sec
+% Thevenin variables
+Zm = (1j*Xm*Rc)/(1j*Xm+Rc); % ohms
+Z1 = Rph+1j*Xph; % ohms
+Vth = Vphase*Zm/(Z1+Zm); % volts
+Zth = Z1*Zm/(Z1+Zm); % ohms
+Rth = real(Zth); % ohms
+Xth = imag(Zth); % ohms
+% Slip (and rotor speed) array
+s = -1:0.001:2;
+s = fliplr(s);
+Nr = Nsync*(1-s); % rpm
+wr = Nr*2*pi/60; % rad/sec
+num = numel(s);
+% Torque array using the calculated variables and slip variation
+Tm = (3*abs(Vth)^2/wsync)*(1./ ( (Rth+R2p./s).^2 + (Xth+Xrp)^2 ) )...
+    .*(R2p./s); % Nm
+% At synchronous speed, torque will be zero (avobe equation cannot calculate)
+Tm((s==0)) = 0; % Nm
+% Plot the torque-speed curve
+figure;
+plot(Nr,Tm,'k-','LineWidth',2.0);
+xlabel('Rotor speed (rpm)','Fontweight','Bold');
+ylabel('Torque (Nm)','Fontweight','Bold');
+title ('Induction Motor Torque-Speed Characteristic','Fontweight','Bold');
+grid on;
 %%
-% ??????????
+% The resultant torque-speed characteristics is very sharp on the linear
+% stable region which I expected for a train traction machine. a closer
+% look on the linear region is shown below.
+figure;
+plot(Nr,Tm,'k-','LineWidth',2.0);
+xlabel('Rotor speed (rpm)','Fontweight','Bold');
+ylabel('Torque (Nm)','Fontweight','Bold');
+title ('Induction Motor Torque-Speed Characteristic','Fontweight','Bold');
+grid on;
+xlim([750 2000]);
+%%
+% Some other parameters are calculated for the evaluation of machine
+% performance.
+rated_slip = (Nsync-Nrated)/Nsync;
+fprintf('The rated slip is %g.\n',rated_slip);
+starting_torque = Tm((s==1)); % Nm
+max_torque = max(Tm); % Nm
+slip_max_torque = s((Tm==max_torque));
+fprintf('The starting torque is %d Nm.\n', starting_torque);
+fprintf('The maximum torque is %d Nm.\n', max_torque);
+fprintf('The slip at maximum torque is %d.\n', slip_max_torque);
+
+
+%% CONCLUSION
+
+
+
+
+%% NOT USED PARAMETERS
+Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
+% stator slot current
+Iu = stator_slot_pitch*electric_loading*1000; % amps
+
 Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
 
