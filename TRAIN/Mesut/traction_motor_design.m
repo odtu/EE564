@@ -31,7 +31,7 @@
 % # Torque-speed characteristics
 % # Determination of basic parameters like starting torque, maximum torque
 % etc.
-% # Basic thermal analysis
+% # Motoranalysis
 % # Conclusions
 % # References
 
@@ -1110,6 +1110,7 @@ fprintf('The core loss resistance is %g Ohms.\n',Rc);
 %% Equivalent Circuit
 % The resultant equivalent circuit is shown in the figure below at rated
 % frequency of operation.
+
 I = imread('eqv_circ.png');
 figure;
 imshow(I);
@@ -1168,15 +1169,171 @@ fprintf('The maximum torque is %d Nm.\n', max_torque);
 fprintf('The slip at maximum torque is %d.\n', slip_max_torque);
 
 
+%% Motoranalysis Program Drawings
+% The geometry of the machine with the calculated parameters is shown in
+% the following Figure.
+
+I = imread('geometry1.png');
+figure;
+imshow(I);
+title('Geometry of the Machine','FontSize',18,'FontWeight','Bold');
+
+%%
+% The geometry of the stator slot is shown in the following Figure.
+
+I = imread('geometry2.png');
+figure;
+imshow(I);
+title('Geometry of Stator Slot','FontSize',18,'FontWeight','Bold');
+
+%%
+% The geometry of the rotor bar is shown in the following Figure.
+
+I = imread('geometry3.png');
+figure;
+imshow(I);
+title('Geometry of Rotor Bar','FontSize',18,'FontWeight','Bold');
+
+%%
+% Winding configuration is shown in the following Figure.
+
+I = imread('winding1.png');
+figure;
+imshow(I);
+title('Winding Configuration','FontSize',18,'FontWeight','Bold');
+
+
+%%
+% The equations used during stator and rotor slot sizing are shown.  
+
+I = imread('equations.png');
+figure;
+imshow(I);
+title('Equations','FontSize',18,'FontWeight','Bold');
+
+
+
 %% CONCLUSION
+% In this project, a squirrel cage asynchronous traction motor for use in
+% high power AC locomotive traction systems is designed.
+%%
+% The main machine dimensions are categorized as: Machine length, inner
+% and outer diameter, air gap distance. These dimensions are determined by
+% considering the machine loading; i.e., electrical loading and magnetic
+% loading. First, a specific machine constant value is selected based on
+% the power rating of thr machine. From this selection and calculation
+% of the machine aspect ratio, first selection of machine length and
+% diameter is achieved. By using the rated torque, the tangential stress
+% that the machine will be exerted is calculated. The tangential stress is
+% calculated for verification and it turned out to be in acceptable limits.
+% The air gap distance is also calculated based on some empirical formula.
+% A magnetic loading value (air gap) is selected and the electrical loading
+% is calculated from this selection.
+%%
+% The main dimensions are selected close to the calculated values above and
+% the tangential stress, electrical loading and magnetic loading values are
+% verified to be acceptable.
+%%
+% Aimed flux densities at different parts of the machine (gap, yoke, teeth,
+% stator, rotor) are specified. 
+%%
+% The minimum and maximum stator slot number is calculated based on the 
+% limits of the stator slot pitch in mm. Then, the stator slot number is
+% selected based on a double layer under-pitched stator winding
+% configuration which can eliminate the 5th harmonic.
+%%
+% The winding factor is calculated up to 31st harmonic as well as the
+% fundamental component. The winding factor values show that, 5th harmonic
+% is completely eliminated, 3rd and 9th harmonic components can be
+% eliminated on the line to line voltage with the star connection, there is
+% a little 7th harmonic. Therefore, the resultant voltage waveform will be
+% highly sinusoidal. On the other hand, there is 10 percent reduction on
+% the fundamental component. The results that this situation may yield are
+% discussed in the report and it is decided that this reduction is
+% admissible.
+%%
+% The stator number of turns per phase is determined based on the
+% well-known induced voltage formula. The required modification on the
+% machine parameters based on the selected turn number is achieved so that
+% same amount of voltage is induced. The machine length is increased
+% slightly for this purpose. As some parameter is changed, the machine
+% loading and tangential stress is verified one more time.
+%%
+% The peak fundamental MMF of the air gap is calculated. This has been a
+% turning point for the design. As it turned out, with the selected air gap
+% distance, the air gap flux density is too high. The required air gap
+% distance to keep the flux at desired magnetic loading is much higher than
+% the firstly determined air gap distance. At this point, I am not really
+% sure which one is the right parameter to choose.
+%%
+% For the selection of rotor slot number, a subroutine is developed which
+% picks up the usable and non-usable rotor number of slots. Sufficienct
+% discussion about this matter is included in the report.
+%%
+% Copper material is selected for stator windings and aluminium material is
+% selected for rotor bars. For the sizing of the stator windings, both skin
+% effect and current carrying capability of the windings are considered. A
+% current density values is selected, a wire is selected from standard AWG
+% Gauge and this current density is verified. The required wire area
+% including insulation is calculated for stator slots. Sufficienct
+% discussion is included in the report regarding skin effect consideration.
+% A similar procedure is used for the design of the rotor bar conductors.
+%%
+% The dimensions of the stator slots are determined based on: fill factor,
+% required slot area, selected slot shape, stator slot pitch and some
+% geometrical manipulations. From the dimensioning of stator slots, flux
+% densities at different parts (teeth, yoke) are verified. finally, Stator
+% core MMF is calculated.
+%%
+% A different geometry is selected for the rotor bars and the dimensions 
+% determined accordingly. a similar procedure is followed. The end rings of
+% the squirrel cage rotor are also considered and dimensioned. Next, a
+% shaft dismeter is selected.
+%%
+% The effect of cooling ducts on the effective machine length is analyzed
+% and calculations have been done. Moreover, Carter's coefficient for both
+% stator and rotor are calculated and the effective air gap is calculated.
+%%
+% The equivalent circuit parameters of the machine are calculated
+% includings: magnetizing inductance, leakage inductances, winding and bar
+% resistances, core loss resistance. their per unit values are also
+% determined for verification.
+%%
+% Mass of different parts of the machine are calculated such as: windings,
+% bars, teeth, yoke etc.
+%%
+% The copper losses are calculated by the resiatance values and the core
+% losses are calculated by the mass values and empirical equations. From
+% these loss values, efficiency of the machine is calculated and it turned
+% out to be close to the efficiency aim specified at the beginning.
+%%
+% Finally, torque-speed characteristics of the machine is obtained and some
+% parameters like starting torque, maximum torque, slip at maximum torque
+% etc. are determined. The linear region of the characteristics is very
+% narrow such that the rated torque is in the unstable region. This
+% actually shows that this design is a fail or the calculation  of torque
+% is wrong.
+%%
+% All in all, this project have been very helpful of understanding how the
+% main dimensions of an electrical machine are chosen. The effect of these
+% dimensions to one another are analyzed very deeply and the significant
+% machine parameters like tangential stress, machine loading etc. are
+% understood. On the other hand, no FEM analysis on a simulation program
+% has been achieved. Therefore, I could not be able to verify my design.
 
 
-
-
-%% NOT USED PARAMETERS
-Tas = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
-% stator slot current
-Iu = stator_slot_pitch*electric_loading*1000; % amps
-
-Tar = 200*atan(2*(hw-hos)/(bs1-bos))/pi; % grad
-
+%% References
+% 1. Ion Boldea, Syed A. Nasar, The Indcution Machine Handbook
+%%
+% 2. juha Pyrhönen, Tapani Jokinen, Valeria Hrabovcova, Design of Rotating
+% Electrical Machines
+%%
+% 3. http://motoranalysis.com/
+%%
+% 4. IEC 60034-30 standard on efficiency classes
+%%
+% 5. Low voltage motors, Motor guide, ABB, February 2014
+%%
+% 6. Standard motors up to frame size 315 L, Siemens AG 2008
+%%
+% 7. W. L. Soong, Sizing of Electrical Machines, 26 Sept 2008
